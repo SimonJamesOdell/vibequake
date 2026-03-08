@@ -2832,8 +2832,7 @@ export const startGame = async (root: HTMLDivElement) => {
         <span class="hud-chip">FPS <strong data-fps>00</strong></span>
       </div>
       <div class="minimap-panel" aria-hidden="true">
-        <div class="minimap-title">Auspex</div>
-        <canvas class="minimap-canvas" data-minimap width="176" height="176"></canvas>
+        <canvas class="minimap-canvas" data-minimap width="352" height="352"></canvas>
       </div>
       <div class="flashlight-falloff" aria-hidden="true"></div>
       <div class="light-stencil" aria-hidden="true"></div>
