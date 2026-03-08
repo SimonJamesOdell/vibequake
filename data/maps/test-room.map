@@ -1,0 +1,36 @@
+// Simple hollow box
+{
+"classname" "worldspawn"
+// Outer shell
+{
+( -64 -64 -16 ) ( -64 -63 -16 ) ( -64 -64 -15 ) metal 0 0 0 1 1
+( -64 -64 -16 ) ( -64 -64 -15 ) ( -63 -64 -16 ) metal 0 0 0 1 1
+( -64 -64 -16 ) ( -63 -64 -16 ) ( -64 -63 -16 ) metal 0 0 0 1 1
+( 64 64 80 ) ( 64 65 80 ) ( 65 64 80 ) metal 0 0 0 1 1
+( 64 64 80 ) ( 65 64 80 ) ( 64 64 81 ) metal 0 0 0 1 1
+( 64 64 80 ) ( 64 64 81 ) ( 64 65 80 ) metal 0 0 0 1 1
+}
+// Thin floor platform
+{
+( -56 -56 8 ) ( -56 -55 8 ) ( -56 -56 9 ) concrete 0 0 0 1 1
+( -56 -56 8 ) ( -56 -56 9 ) ( -55 -56 8 ) concrete 0 0 0 1 1
+( -56 -56 8 ) ( -55 -56 8 ) ( -56 -55 8 ) concrete 0 0 0 1 1
+( 56 56 10 ) ( 56 57 10 ) ( 57 56 10 ) concrete 0 0 0 1 1
+( 56 56 10 ) ( 57 56 10 ) ( 56 56 11 ) concrete 0 0 0 1 1
+( 56 56 10 ) ( 56 56 11 ) ( 56 57 10 ) concrete 0 0 0 1 1
+}
+}
+{
+"classname" "info_player_start"
+"origin" "0 0 48"
+}
+{
+"classname" "light"
+"origin" "0 0 64"
+"light" "300"
+}
+{
+"classname" "light"
+"origin" "0 0 192"
+"light" "300"
+}
