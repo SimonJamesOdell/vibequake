@@ -390,6 +390,42 @@ button.secondary-button:hover {
   gap: 0.5rem;
 }
 
+.world-directory {
+  margin-top: 0.9rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.world-directory-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(145, 192, 255, 0.24);
+  background: rgba(6, 16, 30, 0.52);
+  border-radius: 6px;
+  padding: 0.4rem 0.55rem;
+}
+
+.world-directory-label {
+  color: #9cd4ff;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.world-directory-occupancy {
+  color: #ffd891;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+}
+
+.world-directory-empty {
+  margin: 0;
+  color: rgba(209, 230, 255, 0.75);
+  font-size: 0.78rem;
+}
+
 .map-button {
   padding: 0.6rem 1.2rem;
   background: rgba(30, 15, 40, 0.7);

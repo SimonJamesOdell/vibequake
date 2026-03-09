@@ -1,10 +1,346 @@
 [
   {
+    "id": "c2659e3a-4e06-4fcd-a930-3ebf9a0130de",
+    "name": "Anonymous",
+    "score": 17200,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-09T01:02:12.901Z"
+  },
+  {
+    "id": "296d021b-3039-4f8a-a0cc-5644c66ca614",
+    "name": "Anonymous",
+    "score": 17199,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-09T01:02:53.980Z"
+  },
+  {
+    "id": "21b9a9bd-2125-46a3-830d-6c9d20f38b58",
+    "name": "Anonymous",
+    "score": 17199,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-09T01:03:07.164Z"
+  },
+  {
+    "id": "d9f2ca74-e190-4bc4-aca0-3fed898b6874",
+    "name": "Anonymous",
+    "score": 17199,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-09T01:03:12.303Z"
+  },
+  {
+    "id": "21e3ec10-2500-403a-812e-6a7c36bc22f3",
+    "name": "Anonymous",
+    "score": 9100,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-09T00:58:03.214Z"
+  },
+  {
+    "id": "0402f8c6-3141-40d8-94be-62aa955b6ed6",
+    "name": "Anonymous",
+    "score": 9100,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-09T00:58:14.467Z"
+  },
+  {
+    "id": "3685751e-c522-4aa8-bbe6-11f2ebc48eed",
+    "name": "Anonymous",
+    "score": 5500,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:27:35.278Z"
+  },
+  {
+    "id": "2c318335-6d70-47af-9908-07a0349bc512",
+    "name": "Anonymous",
+    "score": 4400,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:29:10.648Z"
+  },
+  {
+    "id": "5b62c714-b933-4ced-8abc-2c78d4b8d954",
+    "name": "Anonymous",
+    "score": 4400,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:29:28.231Z"
+  },
+  {
+    "id": "d98779ab-9348-40bc-aa53-f9f670dfefe8",
+    "name": "Anonymous",
+    "score": 4400,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:29:32.469Z"
+  },
+  {
+    "id": "6cd4e626-1e27-4c32-b39a-aa987eb35b82",
+    "name": "Anonymous",
+    "score": 4400,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:29:36.451Z"
+  },
+  {
+    "id": "9557c6ea-defe-4914-a32e-2e83dd0b4291",
+    "name": "Anonymous",
+    "score": 4400,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:29:40.840Z"
+  },
+  {
+    "id": "6679cba1-18d8-46d7-8b3c-9963169da51f",
+    "name": "Anonymous",
+    "score": 4400,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:29:44.909Z"
+  },
+  {
+    "id": "7d2ad4b4-b427-4950-a22c-8773f72f3665",
+    "name": "Anonymous",
+    "score": 4400,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:29:48.793Z"
+  },
+  {
+    "id": "508e3e83-362c-4d81-8cfe-2cba282a6227",
+    "name": "Anonymous",
+    "score": 4400,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:29:52.361Z"
+  },
+  {
+    "id": "ac685944-f884-47fe-82c4-37abeee96265",
+    "name": "Anonymous",
+    "score": 4000,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:28:58.845Z"
+  },
+  {
+    "id": "a19264b4-2aff-4088-a2da-3e2a750ea238",
+    "name": "Anonymous",
+    "score": 3900,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-08T21:35:34.376Z"
+  },
+  {
+    "id": "765a1cae-fb0e-457f-b71f-0f613cfe6827",
+    "name": "Anonymous",
+    "score": 3700,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-08T22:04:11.186Z"
+  },
+  {
+    "id": "72275407-3de0-4772-a562-69d0140b9533",
+    "name": "Anonymous",
+    "score": 3302,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:48:13.384Z"
+  },
+  {
+    "id": "347b5e24-7329-44ee-8b4b-495815678d16",
+    "name": "Anonymous",
+    "score": 3302,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:49:03.042Z"
+  },
+  {
+    "id": "d2827daf-fe12-4b1e-8cb5-c6e55a3b1e7c",
+    "name": "Anonymous",
+    "score": 3302,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:49:08.744Z"
+  },
+  {
+    "id": "b4dcabe6-f8fd-4851-a931-045b8b44503c",
+    "name": "Anonymous",
+    "score": 3302,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:51:30.294Z"
+  },
+  {
+    "id": "f92c8af1-ec29-4e59-9970-fd39b12b9d3d",
+    "name": "Anonymous",
+    "score": 3302,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:51:34.023Z"
+  },
+  {
+    "id": "f60ccedd-1ddc-4460-9d86-0728deeb6225",
+    "name": "Anonymous",
+    "score": 3302,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:51:39.658Z"
+  },
+  {
+    "id": "8c04b785-2667-40bd-b1a6-290d2bdc12a8",
+    "name": "Anonymous",
+    "score": 3100,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:27:48.409Z"
+  },
+  {
+    "id": "b714e9b5-8cd0-4050-8c99-3d570c96e51d",
+    "name": "Anonymous",
+    "score": 2300,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-08T21:33:44.084Z"
+  },
+  {
+    "id": "476d1e32-2262-41d2-a635-764741919136",
+    "name": "Anonymous",
+    "score": 1600,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:12:33.853Z"
+  },
+  {
+    "id": "79dd27c3-01e9-44ca-9e45-97cba534a318",
+    "name": "Anonymous",
+    "score": 1600,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:12:38.974Z"
+  },
+  {
+    "id": "4ce5e250-f324-4eee-83ee-32ae62483522",
+    "name": "Anonymous",
+    "score": 1600,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:12:43.483Z"
+  },
+  {
+    "id": "b1299abe-b2b6-47f0-b3f4-e5985689061d",
+    "name": "Anonymous",
+    "score": 1500,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:10:19.032Z"
+  },
+  {
+    "id": "61fcaad0-af70-459d-9f89-b0bfa7705ae0",
+    "name": "Anonymous",
+    "score": 1402,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:47:24.858Z"
+  },
+  {
+    "id": "754ed6a0-4c8b-4ac3-a108-4b4b5d09ecb4",
+    "name": "Anonymous",
+    "score": 1200,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:26:47.261Z"
+  },
+  {
+    "id": "f9c3f724-73ea-400a-a199-5b9443dde7ba",
+    "name": "Anonymous",
+    "score": 1200,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:29:54.254Z"
+  },
+  {
+    "id": "011e6118-5ca7-4cfa-b4a2-5a147efb187a",
+    "name": "Anonymous",
+    "score": 1000,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:11:16.413Z"
+  },
+  {
+    "id": "b30fa1b9-7c02-44b5-8749-0c34ba02fd3d",
+    "name": "Anonymous",
+    "score": 1000,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:26:41.287Z"
+  },
+  {
+    "id": "a4caadd8-3119-4537-90fa-86dda267f74e",
+    "name": "Anonymous",
+    "score": 1000,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-08T21:37:00.656Z"
+  },
+  {
+    "id": "12ed1d30-89cd-4fd0-9fcb-8e4446710160",
+    "name": "Anonymous",
+    "score": 1000,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:39:10.891Z"
+  },
+  {
+    "id": "6a322399-3fed-430b-a4ae-03c1ce389377",
+    "name": "Anonymous",
+    "score": 900,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:24:14.421Z"
+  },
+  {
+    "id": "08d90c02-8716-4c72-9705-2e0c76b4ea73",
+    "name": "Anonymous",
+    "score": 600,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:46:11.509Z"
+  },
+  {
+    "id": "2af10d55-df9e-4c48-86fc-a30ccb63ca87",
+    "name": "Anonymous",
+    "score": 600,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:46:37.731Z"
+  },
+  {
+    "id": "ffd1b93d-934d-4e7a-b71e-18a02dfc8f6d",
+    "name": "Anonymous",
+    "score": 600,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:46:53.751Z"
+  },
+  {
+    "id": "40f8f8e2-7625-4be4-b3c3-5848b42aff4b",
+    "name": "Anonymous",
+    "score": 600,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:48:27.813Z"
+  },
+  {
+    "id": "44ccf5ad-00dc-4fa7-87ff-89e4862aff7a",
+    "name": "Anonymous",
+    "score": 600,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:49:04.679Z"
+  },
+  {
+    "id": "28c9608b-06c3-4e7f-a132-b72ccafce017",
+    "name": "Anonymous",
+    "score": 600,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:49:08.572Z"
+  },
+  {
+    "id": "41354d17-75aa-4dbe-a1c7-3a9aeaeb25ed",
+    "name": "Anonymous",
+    "score": 302,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:47:03.543Z"
+  },
+  {
     "id": "c3ab04d3-d640-4ea6-97ff-3bacb4ae26bc",
     "name": "Anonymous",
     "score": 236,
     "mapId": "neon-arena",
     "createdAt": "2026-03-07T22:58:29.315Z"
+  },
+  {
+    "id": "71c604a9-d50b-45cc-a8e0-54189c295fa0",
+    "name": "Anonymous",
+    "score": 202,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:46:59.609Z"
+  },
+  {
+    "id": "6d48634f-5dcc-4908-b45e-0bf6354bb4f3",
+    "name": "Anonymous",
+    "score": 200,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-08T20:45:44.135Z"
+  },
+  {
+    "id": "9f6249d2-5a2f-4e82-bd08-318e96f60bbf",
+    "name": "Anonymous",
+    "score": 200,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:03:45.682Z"
   },
   {
     "id": "febd4c83-b30f-406f-8507-b3c2b8900b20",
@@ -245,6 +581,62 @@
     "createdAt": "2026-03-07T23:04:55.511Z"
   },
   {
+    "id": "bf10311e-d26f-48ce-826a-e8906f458d87",
+    "name": "Anonymous",
+    "score": 100,
+    "mapId": "cathedral-cavern",
+    "createdAt": "2026-03-08T20:54:43.335Z"
+  },
+  {
+    "id": "f9fa6f1d-adfe-4788-8b3c-e61cf3f518ec",
+    "name": "Anonymous",
+    "score": 100,
+    "mapId": "cathedral-cavern",
+    "createdAt": "2026-03-08T20:54:52.008Z"
+  },
+  {
+    "id": "337fd2f7-7dbe-483a-a970-cc630038fcda",
+    "name": "Anonymous",
+    "score": 100,
+    "mapId": "cathedral-cavern",
+    "createdAt": "2026-03-08T20:55:30.873Z"
+  },
+  {
+    "id": "5518b84c-99d8-477e-9f64-de894779444a",
+    "name": "Anonymous",
+    "score": 100,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-08T21:38:41.550Z"
+  },
+  {
+    "id": "e26e87b3-11b4-4a23-94cb-cee4bde65d79",
+    "name": "Anonymous",
+    "score": 100,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:07:56.693Z"
+  },
+  {
+    "id": "0805412e-2f80-497b-8c13-0109b9c1dd80",
+    "name": "Anonymous",
+    "score": 100,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:08:02.985Z"
+  },
+  {
+    "id": "842ad45f-1f08-4421-9203-18440490cd87",
+    "name": "Anonymous",
+    "score": 100,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:14:40.778Z"
+  },
+  {
+    "id": "3fbc3dd2-79f5-40db-b451-0fcb9042985e",
+    "name": "Anonymous",
+    "score": 100,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:16:16.695Z"
+  },
+  {
     "id": "e6ac3808-7ddb-40a8-b4c3-71ec97eeca99",
     "name": "Anonymous",
     "score": 99,
@@ -257,6 +649,20 @@
     "score": 88,
     "mapId": "stormkeep",
     "createdAt": "2026-03-07T05:41:53.438Z"
+  },
+  {
+    "id": "3bb1348a-190a-4741-80ac-931e5a72bf24",
+    "name": "Anonymous",
+    "score": 77,
+    "mapId": "dark-caverns",
+    "createdAt": "2026-03-08T20:14:37.839Z"
+  },
+  {
+    "id": "a106c165-8871-4063-96fe-cceed364cffc",
+    "name": "Anonymous",
+    "score": 76,
+    "mapId": "dark-caverns",
+    "createdAt": "2026-03-08T20:15:14.907Z"
   },
   {
     "id": "700bfce8-871d-421e-bde6-a826ca61cd8a",
@@ -292,411 +698,5 @@
     "score": 65,
     "mapId": "neon-arena",
     "createdAt": "2026-03-07T22:20:38.236Z"
-  },
-  {
-    "id": "5fec741a-7a8d-4bfd-8b2b-16b59c2d1e31",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:38.479Z"
-  },
-  {
-    "id": "039cdd91-5141-4d09-806b-004b2113f6b8",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:38.651Z"
-  },
-  {
-    "id": "2d90ba77-1cf0-4327-9f68-7ac4e72250e5",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:38.987Z"
-  },
-  {
-    "id": "4e9a0859-50dd-4202-9b0e-acc0ebc5e088",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:39.521Z"
-  },
-  {
-    "id": "49e27e51-9075-4218-8dc3-dd21a76a5196",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:39.858Z"
-  },
-  {
-    "id": "c33a695f-0f68-4544-9802-88bf52f84b5b",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:39.928Z"
-  },
-  {
-    "id": "dd190cf5-6ede-4126-b1d4-c6dc0ac20981",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:40.068Z"
-  },
-  {
-    "id": "3b56d4b9-9fa2-41a8-af61-9f045ec8447c",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:41.253Z"
-  },
-  {
-    "id": "1b5767f6-d20b-4e4b-8a29-7cf558957ae1",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:41.295Z"
-  },
-  {
-    "id": "5e68b5e4-e319-49a7-81fc-94c3e7676f1e",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:41.823Z"
-  },
-  {
-    "id": "343eb387-411d-4b79-8d87-c3ccd58af507",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:42.247Z"
-  },
-  {
-    "id": "6a03e531-50fa-4ea5-9353-54d46c7c0e62",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:42.514Z"
-  },
-  {
-    "id": "2c885c64-8d45-4b6c-a671-80d41f1dfea0",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:42.648Z"
-  },
-  {
-    "id": "955db4e0-0070-4fe8-907c-461b6744b5e4",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:42.781Z"
-  },
-  {
-    "id": "d73af1f5-d27d-48ce-8083-065405d68a4a",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:43.282Z"
-  },
-  {
-    "id": "43beb4a0-9657-4735-961b-e77eb64354bb",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:43.389Z"
-  },
-  {
-    "id": "c69f4009-239a-400f-af1b-7a157b2e1658",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:43.788Z"
-  },
-  {
-    "id": "6639f10e-b10b-44d3-abe1-9c7bc3bbbf86",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:44.056Z"
-  },
-  {
-    "id": "2dc3ed0d-0f88-43c8-a536-5ccaf2057200",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:44.129Z"
-  },
-  {
-    "id": "e4668c96-6bc5-4708-a7d0-be9fd99466e6",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:44.492Z"
-  },
-  {
-    "id": "a8d377de-b94a-460b-b971-017e73b3f31c",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:45.292Z"
-  },
-  {
-    "id": "582d8c75-5da4-4c46-9e83-8b26cf7efe40",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:45.374Z"
-  },
-  {
-    "id": "4024bd6f-4a8a-4c56-ada9-f1718c8e7de9",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:45.825Z"
-  },
-  {
-    "id": "af9a7e6c-7e11-4ccc-a39d-fcc7c4864368",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:46.244Z"
-  },
-  {
-    "id": "6f0d2d19-4d28-45da-9144-e1a1f4da9e6e",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:46.576Z"
-  },
-  {
-    "id": "67261539-8840-4852-8ac5-9c706659bdc4",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:46.958Z"
-  },
-  {
-    "id": "0a2f6fdb-c547-457e-a3fe-5fba9750bb6f",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:47.142Z"
-  },
-  {
-    "id": "e686de45-998a-43c6-a01e-1804ff560e76",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:47.376Z"
-  },
-  {
-    "id": "65079292-f903-4fa6-b10d-8d8d3058f052",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:47.810Z"
-  },
-  {
-    "id": "67f0a691-5142-425f-accc-d6c57073f4f4",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:47.993Z"
-  },
-  {
-    "id": "a70202c2-0fba-4c30-a8c9-6ffd5190b19c",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:48.493Z"
-  },
-  {
-    "id": "9029cf05-bfc2-4a3f-b5df-8ae2173cfeb7",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:48.666Z"
-  },
-  {
-    "id": "5d3ef8d2-f8da-4346-b07f-5ffdedf5c2fb",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:49.096Z"
-  },
-  {
-    "id": "6eaaff57-597c-48c6-ae7f-050c21d499cd",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:49.325Z"
-  },
-  {
-    "id": "ac365609-12d9-41ca-ab12-231d4992c47e",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:49.713Z"
-  },
-  {
-    "id": "08104563-af11-4829-81f0-a48add242fcb",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:49.979Z"
-  },
-  {
-    "id": "177756ff-908b-4226-ad32-8cc1389969f0",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:50.379Z"
-  },
-  {
-    "id": "f5dbd69b-c5fe-49b2-a4f0-5aa7cc39a041",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:50.432Z"
-  },
-  {
-    "id": "fd0f169f-2216-461a-9712-258313685785",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:51.397Z"
-  },
-  {
-    "id": "828eef12-c51d-4bd7-82a2-bba963a672c0",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:51.829Z"
-  },
-  {
-    "id": "0113d49d-a9b8-43d4-bb8c-1697d57a5e88",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:51.931Z"
-  },
-  {
-    "id": "44064eaf-df88-4a84-b4a5-fe53f928258b",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:52.185Z"
-  },
-  {
-    "id": "7f2f1f7b-374e-431b-89d6-95d41d232ab4",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:52.279Z"
-  },
-  {
-    "id": "268ce521-3f3b-43e5-b394-66199e05a090",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:52.850Z"
-  },
-  {
-    "id": "5c3e500a-56fc-4e05-b6fb-acd21563118e",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:52.947Z"
-  },
-  {
-    "id": "d0255087-080d-4434-9af4-1e3240b13f10",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:53.243Z"
-  },
-  {
-    "id": "51d04b65-a1a2-4c67-9ef6-806c15bb4f1f",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:53.462Z"
-  },
-  {
-    "id": "f6f84299-3acc-466f-93ed-dc630252e1d1",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:54.414Z"
-  },
-  {
-    "id": "78ce16e5-8fb1-42d1-a814-ff63133a7c8b",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:54.699Z"
-  },
-  {
-    "id": "e521c3aa-7330-4591-9e54-be46213813b5",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:55.264Z"
-  },
-  {
-    "id": "f28f8e18-5ce9-478c-a453-aa1dba2b0703",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:55.517Z"
-  },
-  {
-    "id": "11b2311e-f492-4a10-88fe-31b46718a0cd",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:55.816Z"
-  },
-  {
-    "id": "047236f4-47cc-461e-a8a1-b82addd3fe33",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:55.818Z"
-  },
-  {
-    "id": "fc1608d8-74b2-44cc-bea0-742c49960d29",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:56.668Z"
-  },
-  {
-    "id": "2f1bed2e-4a0f-421e-a795-dee5413b4904",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:56.916Z"
-  },
-  {
-    "id": "4dee0391-3f0a-4c72-bbc4-3d1f7c63d1d0",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:57.200Z"
-  },
-  {
-    "id": "f5415c48-b8ee-4579-82d7-ebf4ceacaceb",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:57.732Z"
-  },
-  {
-    "id": "ab9df91a-56d4-499b-a661-010699a2a125",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:58.083Z"
   }
 ]

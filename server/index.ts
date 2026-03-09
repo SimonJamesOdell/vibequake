@@ -1,14 +1,17 @@
 import cors from 'cors'
 import express from 'express'
+import { createServer } from 'node:http'
 import { randomUUID } from 'node:crypto'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { WebSocketServer } from 'ws'
 
 import type { ArenaMap, ArenaMapSummary, HighScoreEntry, HighScoreSubmission, MapImportRequest } from '../src/shared/contracts.js'
 import { legacyTilesToBrushMap, type LegacyTileMap } from '../src/shared/legacy-map.js'
 import { parseBSP } from './quake-bsp.js'
 import { parseQuakeMapSource } from './quake-map.js'
+import { MultiplayerManager } from './multiplayer.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -386,6 +389,31 @@ app.use((error: unknown, _request: express.Request, response: express.Response, 
 
 await ensureStorage()
 
-app.listen(port, () => {
+// Create HTTP server and attach WebSocket server
+const httpServer = createServer(app)
+const wss = new WebSocketServer({ server: httpServer, path: '/ws' })
+const multiplayerManager = new MultiplayerManager({
+  resolveBootstrap: async (mapId) => {
+    const map = await readMap(mapId)
+    return {
+      playerSpawn: map.playerSpawn,
+      enemySpawns: map.enemySpawns,
+      bounds: map.bounds,
+    }
+  },
+})
+
+// Handle WebSocket connections
+wss.on('connection', (ws) => {
+  multiplayerManager.handleConnection(ws)
+})
+
+// Start game tick for enemy respawns (60 Hz)
+setInterval(() => {
+  multiplayerManager.tick()
+}, 1000 / 60)
+
+httpServer.listen(port, () => {
   console.log(`VibeQuake API listening on http://localhost:${port}`)
+  console.log(`VibeQuake Multiplayer WebSocket ready on ws://localhost:${port}`)
 })

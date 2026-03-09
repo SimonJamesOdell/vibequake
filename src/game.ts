@@ -11,6 +11,9 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 import type { ArenaMap, ArenaMapSummary, HighScoreSubmission } from './shared/contracts'
 import { legacyTilesToBrushMap } from './shared/legacy-map'
 import { TextureManager } from './texture-manager'
+import { NetworkClient, type NetworkCallbacks } from './network'
+import type { GameWorldSummary, PlayerState, RoomState } from './shared/multiplayer'
+import { AvatarSystem, type RemotePlayerVisual } from './systems/avatar-system'
 
 type HudRefs = {
   shell: HTMLDivElement
@@ -33,6 +36,7 @@ type HudRefs = {
 }
 
 type Enemy = {
+  id: string
   group: THREE.Group
   core: THREE.Mesh
   hitbox: THREE.Mesh
@@ -101,6 +105,7 @@ type ProjectileNode = {
   enemy?: Enemy
   impactColor?: string
   damageOnArrival?: boolean
+  damageMultiplier?: number
 }
 
 type Projectile = {
@@ -111,6 +116,7 @@ type Projectile = {
   segmentProgress: number
   speed: number
   remaining: number
+  baseOpacity: number
 }
 
 type EnemyBolt = {
@@ -118,6 +124,15 @@ type EnemyBolt = {
   direction: THREE.Vector3
   remaining: number
   speed: number
+}
+
+type WeaponUpgradePickup = {
+  group: THREE.Group
+  light: THREE.PointLight
+  basePosition: THREE.Vector3
+  tier: 1 | 2
+  spinOffset: number
+  collected: boolean
 }
 
 type SolidVolume = {
@@ -410,9 +425,13 @@ const makePatternTexture = (
   drawer: (ctx: CanvasRenderingContext2D, size: number) => void,
   repeatX: number,
   repeatY: number,
+  options?: {
+    size?: number
+    smooth?: boolean
+  },
 ) => {
   const canvas = document.createElement('canvas')
-  const size = 128
+  const size = options?.size ?? 128
   canvas.width = size
   canvas.height = size
   const ctx = canvas.getContext('2d')
@@ -425,12 +444,12 @@ const makePatternTexture = (
   texture.wrapT = THREE.RepeatWrapping
   texture.repeat.set(repeatX, repeatY)
   texture.colorSpace = THREE.SRGBColorSpace
-  texture.magFilter = THREE.NearestFilter
-  texture.minFilter = THREE.NearestMipmapLinearFilter
+  texture.magFilter = options?.smooth ? THREE.LinearFilter : THREE.NearestFilter
+  texture.minFilter = options?.smooth ? THREE.LinearMipmapLinearFilter : THREE.NearestMipmapLinearFilter
   return texture
 }
 
-const wallTexture = (variant: 'neon' | 'cavern' | 'abyssal' = 'neon') =>
+const wallTexture = (variant: 'neon' | 'cavern' | 'abyssal' | 'abyssal-hd' = 'neon') =>
   makePatternTexture((ctx, size) => {
     const image = ctx.createImageData(size, size)
     for (let y = 0; y < size; y += 1) {
@@ -441,17 +460,23 @@ const wallTexture = (variant: 'neon' | 'cavern' | 'abyssal' = 'neon') =>
         const shade = clamp(primary * 0.75 + ridge * 0.25, 0, 1)
         const crack = fbm(x / 7, y / 48, 2)
         const index = (y * size + x) * 4
-        const red = variant === 'abyssal'
+        const red = variant === 'abyssal-hd'
+          ? Math.round(14 + shade * 30 + crack * 6)
+          : variant === 'abyssal'
           ? Math.round(18 + shade * 32 + crack * 8)
           : variant === 'cavern'
           ? Math.round(26 + shade * 50 + crack * 18)
           : Math.round(45 + shade * 85 + crack * 15)
-        const green = variant === 'abyssal'
+        const green = variant === 'abyssal-hd'
+          ? Math.round(36 + shade * 56 - crack * 2)
+          : variant === 'abyssal'
           ? Math.round(30 + shade * 50 - crack * 3)
           : variant === 'cavern'
           ? Math.round(20 + shade * 36 - crack * 4)
           : Math.round(15 + shade * 45 - crack * 5)
-        const blue = variant === 'abyssal'
+        const blue = variant === 'abyssal-hd'
+          ? Math.round(42 + shade * 68 + crack * 14)
+          : variant === 'abyssal'
           ? Math.round(34 + shade * 62 + crack * 14)
           : variant === 'cavern'
           ? Math.round(18 + shade * 26 + crack * 6)
@@ -463,10 +488,14 @@ const wallTexture = (variant: 'neon' | 'cavern' | 'abyssal' = 'neon') =>
       }
     }
     ctx.putImageData(image, 0, 0)
-    if (variant === 'cavern' || variant === 'abyssal') {
+    if (variant === 'cavern' || variant === 'abyssal' || variant === 'abyssal-hd') {
       // Add subtle mineral veins for cave walls.
-      ctx.strokeStyle = variant === 'abyssal' ? 'rgba(112, 181, 192, 0.45)' : 'rgba(215, 143, 83, 0.4)'
-      ctx.lineWidth = variant === 'abyssal' ? 1.2 : 1.4
+      ctx.strokeStyle = variant === 'abyssal-hd'
+        ? 'rgba(142, 233, 246, 0.5)'
+        : variant === 'abyssal'
+        ? 'rgba(112, 181, 192, 0.45)'
+        : 'rgba(215, 143, 83, 0.4)'
+      ctx.lineWidth = variant === 'abyssal-hd' ? 1.0 : variant === 'abyssal' ? 1.2 : 1.4
       for (let seam = 12; seam < size; seam += 26) {
         ctx.beginPath()
         ctx.moveTo(seam, 0)
@@ -495,9 +524,12 @@ const wallTexture = (variant: 'neon' | 'cavern' | 'abyssal' = 'neon') =>
         ctx.fillRect(0, y, size, 3)
       }
     }
-  }, 1.5, 2.5)
+  }, 1.5, 2.5, {
+    size: variant === 'abyssal-hd' ? 256 : 128,
+    smooth: variant === 'abyssal-hd',
+  })
 
-const ceilingTexture = (variant: 'neon' | 'cavern' | 'abyssal' = 'neon') =>
+const ceilingTexture = (variant: 'neon' | 'cavern' | 'abyssal' | 'abyssal-hd' = 'neon') =>
   makePatternTexture((ctx, size) => {
     const image = ctx.createImageData(size, size)
     for (let y = 0; y < size; y += 1) {
@@ -506,15 +538,15 @@ const ceilingTexture = (variant: 'neon' | 'cavern' | 'abyssal' = 'neon') =>
         const pockets = fbm((x + 24) / 34, (y + 80) / 28, 4)
         const rough = clamp(rock * 0.65 + pockets * 0.35, 0, 1)
         const index = (y * size + x) * 4
-        image.data[index] = variant === 'abyssal' ? Math.round(14 + rough * 26) : variant === 'cavern' ? Math.round(22 + rough * 38) : Math.round(15 + rough * 40)
-        image.data[index + 1] = variant === 'abyssal' ? Math.round(24 + rough * 44) : variant === 'cavern' ? Math.round(16 + rough * 24) : Math.round(8 + rough * 25)
-        image.data[index + 2] = variant === 'abyssal' ? Math.round(30 + rough * 55) : variant === 'cavern' ? Math.round(14 + rough * 18) : Math.round(25 + rough * 50)
+        image.data[index] = variant === 'abyssal-hd' ? Math.round(10 + rough * 22) : variant === 'abyssal' ? Math.round(14 + rough * 26) : variant === 'cavern' ? Math.round(22 + rough * 38) : Math.round(15 + rough * 40)
+        image.data[index + 1] = variant === 'abyssal-hd' ? Math.round(30 + rough * 48) : variant === 'abyssal' ? Math.round(24 + rough * 44) : variant === 'cavern' ? Math.round(16 + rough * 24) : Math.round(8 + rough * 25)
+        image.data[index + 2] = variant === 'abyssal-hd' ? Math.round(42 + rough * 62) : variant === 'abyssal' ? Math.round(30 + rough * 55) : variant === 'cavern' ? Math.round(14 + rough * 18) : Math.round(25 + rough * 50)
         image.data[index + 3] = 255
       }
     }
     ctx.putImageData(image, 0, 0)
-    if (variant === 'cavern' || variant === 'abyssal') {
-      ctx.strokeStyle = variant === 'abyssal' ? 'rgba(120, 190, 210, 0.4)' : 'rgba(96, 66, 44, 0.45)'
+    if (variant === 'cavern' || variant === 'abyssal' || variant === 'abyssal-hd') {
+      ctx.strokeStyle = variant === 'abyssal-hd' ? 'rgba(170, 239, 255, 0.42)' : variant === 'abyssal' ? 'rgba(120, 190, 210, 0.4)' : 'rgba(96, 66, 44, 0.45)'
       ctx.lineWidth = 1.4
       for (let y = 10; y < size; y += 24) {
         ctx.beginPath()
@@ -539,7 +571,10 @@ const ceilingTexture = (variant: 'neon' | 'cavern' | 'abyssal' = 'neon') =>
         ctx.stroke()
       }
     }
-  }, 8, 8)
+  }, 8, 8, {
+    size: variant === 'abyssal-hd' ? 256 : 128,
+    smooth: variant === 'abyssal-hd',
+  })
 
 class VibeQuake {
   private readonly scene = new THREE.Scene()
@@ -556,6 +591,7 @@ class VibeQuake {
   private readonly floatingHits: FloatingHit[] = []
   private readonly projectiles: Projectile[] = []
   private readonly enemyBolts: EnemyBolt[] = []
+  private readonly weaponUpgradePickups: WeaponUpgradePickup[] = []
   private readonly enemies: Enemy[] = []
   private readonly hitables: THREE.Object3D[] = []
   private readonly raycaster = new THREE.Raycaster()
@@ -651,6 +687,22 @@ class VibeQuake {
   private lastSpaceTapAt = -10
   private detailLevel: 'full' | 'major' | 'structure' = 'full'
   private gameOverActive = false
+  private weaponUpgradeTier = 0
+  private networkClient: NetworkClient | null = null
+  private worldDirectory: GameWorldSummary[] = []
+  private previewRoomState: RoomState | null = null
+  private myPlayerId: string | null = null
+  private hasRequestedWorldJoin = false
+  private remotePlayers = new Map<string, RemotePlayerVisual>()
+  private readonly useAvatarSystemV2 = import.meta.env.VITE_FEATURE_AVATAR_SYSTEM_V2 === 'true'
+  private readonly avatarSystem = new AvatarSystem({
+    scene: this.scene,
+    getAvatarBaseY: (playerEyeY) => this.getRemoteAvatarBaseY(playerEyeY),
+  })
+  private lastInputSentAt = 0
+  private inputSendInterval = 50 // Send input updates every 50ms
+  private readonly cheatsEnabled = !import.meta.env.PROD
+  private godModeEnabled = false
 
   constructor(container: HTMLDivElement, hud: HudRefs, enemyVisualAssets: EnemyVisualAssets) {
     this.container = container
@@ -718,6 +770,7 @@ class VibeQuake {
     this.spawnEnemies()
     this.bindEvents()
     this.syncHud()
+    this.initializeMultiplayer()
     this.hud.status.textContent = this.detailLevel === 'structure'
       ? 'Detail level: Structure only. Press L to cycle detail levels (structure/major/full).'
       : 'Detail level: Full geometry. Press L to cycle detail levels (structure/major/full).'
@@ -728,6 +781,8 @@ class VibeQuake {
   dispose() {
     this.disposed = true
     cancelAnimationFrame(this.animationId)
+    this.networkClient?.disconnect()
+    this.networkClient = null
     for (const floatingHit of this.floatingHits) {
       floatingHit.element.remove()
     }
@@ -793,6 +848,11 @@ class VibeQuake {
         : 'Full geometry view active. Press V for layout view.'
       return
     }
+    if (event.code === 'F10' || event.code === 'Backquote') {
+      event.preventDefault()
+      this.toggleGodMode()
+      return
+    }
     if (event.code === 'Space') {
       if (event.repeat) {
         return
@@ -821,6 +881,52 @@ class VibeQuake {
 
   private readonly onKeyUp = (event: KeyboardEvent) => {
     this.keys.delete(event.code)
+  }
+
+  private toggleGodMode() {
+    if (!this.cheatsEnabled) {
+      return
+    }
+    this.godModeEnabled = !this.godModeEnabled
+    if (this.godModeEnabled) {
+      this.healthValue = 100
+      this.gameOverActive = false
+    }
+    if (this.networkClient?.isConnected()) {
+      this.networkClient.sendInvulnerable(this.godModeEnabled)
+    }
+    this.hud.status.textContent = this.godModeEnabled
+      ? 'DEV cheat: godmode enabled.'
+      : 'DEV cheat: godmode disabled.'
+  }
+
+  private getRemoteAvatarBaseY(playerEyeY: number) {
+    // Networked player Y is camera/eye height; this avatar's lowest point sits at local y=0.15.
+    return playerEyeY - (this.floorLevel + 0.15)
+  }
+
+  private hasRemotePlayer(playerId: string) {
+    return this.useAvatarSystemV2
+      ? this.avatarSystem.hasRemotePlayer(playerId)
+      : this.remotePlayers.has(playerId)
+  }
+
+  private getRemotePlayer(playerId: string) {
+    return this.useAvatarSystemV2
+      ? this.avatarSystem.getRemotePlayer(playerId)
+      : this.remotePlayers.get(playerId)
+  }
+
+  private getRemotePlayerIds() {
+    return this.useAvatarSystemV2
+      ? this.avatarSystem.getRemotePlayerIds()
+      : this.remotePlayers.keys()
+  }
+
+  private getRemotePlayers() {
+    return this.useAvatarSystemV2
+      ? this.avatarSystem.getRemotePlayers()
+      : this.remotePlayers.values()
   }
 
   private readonly onMouseMove = (event: MouseEvent) => {
@@ -865,6 +971,7 @@ class VibeQuake {
     if (this.gameOverActive) {
       return
     }
+    this.requestWorldJoinIfNeeded()
     if (document.pointerLockElement !== this.renderer.domElement) {
       this.renderer.domElement.requestPointerLock()
     }
@@ -912,15 +1019,17 @@ class VibeQuake {
     // Rebuild brush geometry with current detail level
     const worldVariant = activeMap.id === 'dark-caverns'
       ? 'cavern'
+      : activeMap.id === 'abyssal-grotto-prime'
+      ? 'abyssal-hd'
       : activeMap.id === 'abyssal-grotto'
       ? 'abyssal'
       : 'neon'
     const wallMaterial = new THREE.MeshStandardMaterial({
       map: wallTexture(worldVariant),
-      roughness: worldVariant === 'cavern' ? 0.86 : 0.4,
-      metalness: worldVariant === 'cavern' ? 0.08 : 0.6,
-      emissive: worldVariant === 'cavern' ? '#140e0b' : '#1a0a28',
-      emissiveIntensity: worldVariant === 'cavern' ? 0.18 : 0.3,
+      roughness: worldVariant === 'cavern' ? 0.86 : worldVariant === 'abyssal' ? 0.6 : worldVariant === 'abyssal-hd' ? 0.52 : 0.4,
+      metalness: worldVariant === 'cavern' ? 0.08 : worldVariant === 'abyssal' ? 0.18 : worldVariant === 'abyssal-hd' ? 0.24 : 0.6,
+      emissive: worldVariant === 'cavern' ? '#140e0b' : worldVariant === 'abyssal' ? '#0b242b' : worldVariant === 'abyssal-hd' ? '#0e3138' : '#1a0a28',
+      emissiveIntensity: worldVariant === 'cavern' ? 0.18 : worldVariant === 'abyssal' ? 0.26 : worldVariant === 'abyssal-hd' ? 0.3 : 0.3,
     })
     for (const brush of activeMap.brushes) {
       const material = brush.texture || wallMaterial
@@ -931,8 +1040,9 @@ class VibeQuake {
   private buildWorld() {
     const isDarkCaverns = activeMap.id === 'dark-caverns'
     const isAbyssalGrotto = activeMap.id === 'abyssal-grotto'
-    const isCavernFamily = isDarkCaverns || isAbyssalGrotto
-    const worldVariant = isDarkCaverns ? 'cavern' : isAbyssalGrotto ? 'abyssal' : 'neon'
+    const isAbyssalGrottoPrime = activeMap.id === 'abyssal-grotto-prime'
+    const isCavernFamily = isDarkCaverns || isAbyssalGrotto || isAbyssalGrottoPrime
+    const worldVariant = isDarkCaverns ? 'cavern' : isAbyssalGrottoPrime ? 'abyssal-hd' : isAbyssalGrotto ? 'abyssal' : 'neon'
     const centerX = (WORLD_MIN_X + WORLD_MAX_X) * 0.5
     const centerZ = (WORLD_MIN_Z + WORLD_MAX_Z) * 0.5
     const positionAt = (xFactor: number, zFactor: number, y = 0) =>
@@ -942,11 +1052,13 @@ class VibeQuake {
         THREE.MathUtils.lerp(WORLD_MIN_Z, WORLD_MAX_Z, zFactor),
       )
 
-    this.scene.background = new THREE.Color(isAbyssalGrotto ? '#020709' : isDarkCaverns ? '#070503' : '#050510')
-    this.scene.fog = new THREE.Fog(isAbyssalGrotto ? '#041115' : isDarkCaverns ? '#080604' : '#010101', 6, isAbyssalGrotto ? 30 : isDarkCaverns ? 34 : 44)
+    this.scene.background = new THREE.Color(isAbyssalGrottoPrime ? '#021115' : isAbyssalGrotto ? '#020709' : isDarkCaverns ? '#070503' : '#050510')
+    this.scene.fog = new THREE.Fog(isAbyssalGrottoPrime ? '#05232b' : isAbyssalGrotto ? '#041115' : isDarkCaverns ? '#080604' : '#010101', 6, isAbyssalGrottoPrime ? 28 : isAbyssalGrotto ? 30 : isDarkCaverns ? 34 : 44)
 
     // Enhanced ambient lighting for better texture visibility
-    this.ambientLight = isAbyssalGrotto
+    this.ambientLight = isAbyssalGrottoPrime
+      ? new THREE.HemisphereLight('#24505a', '#081b20', 0.35)
+      : isAbyssalGrotto
       ? new THREE.HemisphereLight('#1b3238', '#071217', 0.32)
       : isDarkCaverns
       ? new THREE.HemisphereLight('#2a241e', '#0f0907', 0.3)
@@ -954,8 +1066,8 @@ class VibeQuake {
     this.scene.add(this.ambientLight)
 
     // Add directional light for shadows and depth
-    this.sunlight = new THREE.DirectionalLight(isAbyssalGrotto ? '#b8f2ff' : isDarkCaverns ? '#ffd9b1' : '#ffffff', isAbyssalGrotto ? 0.42 : isDarkCaverns ? 0.46 : 0.8)
-    this.sunlight.position.set(isAbyssalGrotto ? 6 : isDarkCaverns ? -8 : 12, isAbyssalGrotto ? 13 : isDarkCaverns ? 14 : 18, isAbyssalGrotto ? -12 : isDarkCaverns ? -10 : 8)
+    this.sunlight = new THREE.DirectionalLight(isAbyssalGrottoPrime ? '#c7f7ff' : isAbyssalGrotto ? '#b8f2ff' : isDarkCaverns ? '#ffd9b1' : '#ffffff', isAbyssalGrottoPrime ? 0.5 : isAbyssalGrotto ? 0.42 : isDarkCaverns ? 0.46 : 0.8)
+    this.sunlight.position.set(isAbyssalGrottoPrime ? 5 : isAbyssalGrotto ? 6 : isDarkCaverns ? -8 : 12, isAbyssalGrottoPrime ? 15 : isAbyssalGrotto ? 13 : isDarkCaverns ? 14 : 18, isAbyssalGrottoPrime ? -9 : isAbyssalGrotto ? -12 : isDarkCaverns ? -10 : 8)
     this.sunlight.castShadow = true
     this.sunlight.shadow.mapSize.width = 4096
     this.sunlight.shadow.mapSize.height = 4096
@@ -970,20 +1082,20 @@ class VibeQuake {
     this.scene.add(this.sunlight)
 
     // Add colored accent lights for atmosphere
-    const accentLight1 = new THREE.PointLight(isAbyssalGrotto ? '#6fe6f3' : isDarkCaverns ? '#ffb56b' : '#00ffff', isAbyssalGrotto ? 1.1 : isDarkCaverns ? 0.8 : 1.2, isAbyssalGrotto ? 28 : isDarkCaverns ? 26 : 35, 2)
-    accentLight1.position.set(centerX - WORLD_WIDTH * 0.3, isAbyssalGrotto ? 2.6 : isDarkCaverns ? 3.8 : 6, centerZ - WORLD_HEIGHT * 0.3)
+    const accentLight1 = new THREE.PointLight(isAbyssalGrottoPrime ? '#84f4ff' : isAbyssalGrotto ? '#6fe6f3' : isDarkCaverns ? '#ffb56b' : '#00ffff', isAbyssalGrottoPrime ? 1.35 : isAbyssalGrotto ? 1.1 : isDarkCaverns ? 0.8 : 1.2, isAbyssalGrottoPrime ? 32 : isAbyssalGrotto ? 28 : isDarkCaverns ? 26 : 35, 2)
+    accentLight1.position.set(centerX - WORLD_WIDTH * 0.3, isAbyssalGrottoPrime ? 3.1 : isAbyssalGrotto ? 2.6 : isDarkCaverns ? 3.8 : 6, centerZ - WORLD_HEIGHT * 0.3)
     accentLight1.castShadow = false
     this.accentLights.push(accentLight1)
     this.scene.add(accentLight1)
 
-    const accentLight2 = new THREE.PointLight(isAbyssalGrotto ? '#9ec8ff' : isDarkCaverns ? '#7ea2bd' : '#ff00aa', isAbyssalGrotto ? 1.0 : isDarkCaverns ? 0.7 : 1.2, isAbyssalGrotto ? 26 : isDarkCaverns ? 24 : 35, 2)
-    accentLight2.position.set(centerX + WORLD_WIDTH * 0.3, isAbyssalGrotto ? 2.9 : isDarkCaverns ? 4.2 : 6, centerZ + WORLD_HEIGHT * 0.3)
+    const accentLight2 = new THREE.PointLight(isAbyssalGrottoPrime ? '#a5ddff' : isAbyssalGrotto ? '#9ec8ff' : isDarkCaverns ? '#7ea2bd' : '#ff00aa', isAbyssalGrottoPrime ? 1.25 : isAbyssalGrotto ? 1.0 : isDarkCaverns ? 0.7 : 1.2, isAbyssalGrottoPrime ? 30 : isAbyssalGrotto ? 26 : isDarkCaverns ? 24 : 35, 2)
+    accentLight2.position.set(centerX + WORLD_WIDTH * 0.3, isAbyssalGrottoPrime ? 3.4 : isAbyssalGrotto ? 2.9 : isDarkCaverns ? 4.2 : 6, centerZ + WORLD_HEIGHT * 0.3)
     accentLight2.castShadow = false
     this.accentLights.push(accentLight2)
     this.scene.add(accentLight2)
 
-    const accentLight3 = new THREE.PointLight(isAbyssalGrotto ? '#89f3ff' : isDarkCaverns ? '#c47f53' : '#6600ff', isAbyssalGrotto ? 0.95 : isDarkCaverns ? 0.55 : 0.9, isAbyssalGrotto ? 20 : isDarkCaverns ? 18 : 30, 2)
-    accentLight3.position.set(centerX, isAbyssalGrotto ? 1.7 : isDarkCaverns ? 2.8 : 8, centerZ)
+    const accentLight3 = new THREE.PointLight(isAbyssalGrottoPrime ? '#9dffff' : isAbyssalGrotto ? '#89f3ff' : isDarkCaverns ? '#c47f53' : '#6600ff', isAbyssalGrottoPrime ? 1.2 : isAbyssalGrotto ? 0.95 : isDarkCaverns ? 0.55 : 0.9, isAbyssalGrottoPrime ? 24 : isAbyssalGrotto ? 20 : isDarkCaverns ? 18 : 30, 2)
+    accentLight3.position.set(centerX, isAbyssalGrottoPrime ? 2.2 : isAbyssalGrotto ? 1.7 : isDarkCaverns ? 2.8 : 8, centerZ)
     accentLight3.castShadow = false
     this.accentLights.push(accentLight3)
     this.scene.add(accentLight3)
@@ -992,11 +1104,11 @@ class VibeQuake {
     const fallbackFloor = new THREE.Mesh(
       new THREE.PlaneGeometry(WORLD_WIDTH + CELL_SIZE * 4, WORLD_HEIGHT + CELL_SIZE * 4),
       new THREE.MeshStandardMaterial({
-        color: isAbyssalGrotto ? '#0a1a1f' : isDarkCaverns ? '#17110d' : '#0d1626',
-        emissive: isAbyssalGrotto ? '#0b2228' : isDarkCaverns ? '#0f0905' : '#032033',
-        emissiveIntensity: isAbyssalGrotto ? 0.14 : isDarkCaverns ? 0.06 : 0.12,
-        roughness: isAbyssalGrotto ? 0.55 : isDarkCaverns ? 0.94 : 0.7,
-        metalness: isAbyssalGrotto ? 0.12 : isDarkCaverns ? 0.04 : 0.25,
+        color: isAbyssalGrottoPrime ? '#082328' : isAbyssalGrotto ? '#0a1a1f' : isDarkCaverns ? '#17110d' : '#0d1626',
+        emissive: isAbyssalGrottoPrime ? '#0f3c44' : isAbyssalGrotto ? '#0b2228' : isDarkCaverns ? '#0f0905' : '#032033',
+        emissiveIntensity: isAbyssalGrottoPrime ? 0.2 : isAbyssalGrotto ? 0.14 : isDarkCaverns ? 0.06 : 0.12,
+        roughness: isAbyssalGrottoPrime ? 0.36 : isAbyssalGrotto ? 0.55 : isDarkCaverns ? 0.94 : 0.7,
+        metalness: isAbyssalGrottoPrime ? 0.24 : isAbyssalGrotto ? 0.12 : isDarkCaverns ? 0.04 : 0.25,
       }),
     )
     fallbackFloor.rotation.x = -Math.PI / 2
@@ -1013,10 +1125,10 @@ class VibeQuake {
       new THREE.PlaneGeometry(WORLD_WIDTH + CELL_SIZE * 4, WORLD_HEIGHT + CELL_SIZE * 4),
       new THREE.MeshStandardMaterial({
         map: ceilingMap,
-        roughness: isAbyssalGrotto ? 0.62 : isDarkCaverns ? 0.9 : 0.5,
-        metalness: isAbyssalGrotto ? 0.2 : isDarkCaverns ? 0.1 : 0.5,
-        emissive: isAbyssalGrotto ? '#0d2f36' : isDarkCaverns ? '#17110f' : '#0f051a',
-        emissiveIntensity: isAbyssalGrotto ? 0.22 : isDarkCaverns ? 0.11 : 0.25,
+        roughness: isAbyssalGrottoPrime ? 0.45 : isAbyssalGrotto ? 0.62 : isDarkCaverns ? 0.9 : 0.5,
+        metalness: isAbyssalGrottoPrime ? 0.28 : isAbyssalGrotto ? 0.2 : isDarkCaverns ? 0.1 : 0.5,
+        emissive: isAbyssalGrottoPrime ? '#10525e' : isAbyssalGrotto ? '#0d2f36' : isDarkCaverns ? '#17110f' : '#0f051a',
+        emissiveIntensity: isAbyssalGrottoPrime ? 0.28 : isAbyssalGrotto ? 0.22 : isDarkCaverns ? 0.11 : 0.25,
       }),
     )
     ceiling.position.y = this.worldCeiling
@@ -1027,10 +1139,10 @@ class VibeQuake {
 
     const wallMaterial = new THREE.MeshStandardMaterial({
       map: wallTexture(worldVariant),
-      roughness: isAbyssalGrotto ? 0.6 : isDarkCaverns ? 0.86 : 0.4,
-      metalness: isAbyssalGrotto ? 0.18 : isDarkCaverns ? 0.08 : 0.6,
-      emissive: isAbyssalGrotto ? '#0b242b' : isDarkCaverns ? '#140e0b' : '#1a0a28',
-      emissiveIntensity: isAbyssalGrotto ? 0.26 : isDarkCaverns ? 0.18 : 0.3,
+      roughness: isAbyssalGrottoPrime ? 0.5 : isAbyssalGrotto ? 0.6 : isDarkCaverns ? 0.86 : 0.4,
+      metalness: isAbyssalGrottoPrime ? 0.28 : isAbyssalGrotto ? 0.18 : isDarkCaverns ? 0.08 : 0.6,
+      emissive: isAbyssalGrottoPrime ? '#114952' : isAbyssalGrotto ? '#0b242b' : isDarkCaverns ? '#140e0b' : '#1a0a28',
+      emissiveIntensity: isAbyssalGrottoPrime ? 0.34 : isAbyssalGrotto ? 0.26 : isDarkCaverns ? 0.18 : 0.3,
     })
     const supportMaterial = new THREE.MeshStandardMaterial({
       color: '#2a1a3f',
@@ -1126,11 +1238,11 @@ class VibeQuake {
       if (isCavernFamily) {
         // Add cave spikes to give Dark Caverns a distinct natural silhouette.
         const spikeMaterial = new THREE.MeshStandardMaterial({
-          color: isAbyssalGrotto ? '#18353c' : '#2f2520',
-          emissive: isAbyssalGrotto ? '#0c2329' : '#1a110c',
-          emissiveIntensity: isAbyssalGrotto ? 0.2 : 0.12,
-          roughness: isAbyssalGrotto ? 0.7 : 0.95,
-          metalness: isAbyssalGrotto ? 0.12 : 0.02,
+          color: isAbyssalGrottoPrime ? '#1d4952' : isAbyssalGrotto ? '#18353c' : '#2f2520',
+          emissive: isAbyssalGrottoPrime ? '#11424a' : isAbyssalGrotto ? '#0c2329' : '#1a110c',
+          emissiveIntensity: isAbyssalGrottoPrime ? 0.28 : isAbyssalGrotto ? 0.2 : 0.12,
+          roughness: isAbyssalGrottoPrime ? 0.58 : isAbyssalGrotto ? 0.7 : 0.95,
+          metalness: isAbyssalGrottoPrime ? 0.2 : isAbyssalGrotto ? 0.12 : 0.02,
         })
         for (const [xFactor, zFactor, height] of [
           [0.16, 0.18, 2.8], [0.28, 0.34, 3.6], [0.42, 0.21, 2.4], [0.58, 0.77, 3.2],
@@ -1149,21 +1261,21 @@ class VibeQuake {
         }
 
         for (const point of [positionAt(0.12, 0.22, 1.9), positionAt(0.84, 0.18, 2.1), positionAt(0.78, 0.82, 1.7), positionAt(0.22, 0.74, 2.0)]) {
-          const ember = new THREE.PointLight(isAbyssalGrotto ? '#75f0ff' : '#ffac6e', isAbyssalGrotto ? 5.2 : 3.8, isAbyssalGrotto ? 14 : 12, 2)
+          const ember = new THREE.PointLight(isAbyssalGrottoPrime ? '#92fbff' : isAbyssalGrotto ? '#75f0ff' : '#ffac6e', isAbyssalGrottoPrime ? 6.2 : isAbyssalGrotto ? 5.2 : 3.8, isAbyssalGrottoPrime ? 16 : isAbyssalGrotto ? 14 : 12, 2)
           ember.position.copy(point)
           this.scene.add(ember)
         }
 
-        if (isAbyssalGrotto) {
+        if (isAbyssalGrotto || isAbyssalGrottoPrime) {
           // Glossy puddle strips to sell a wet cavern floor.
           const puddleMaterial = new THREE.MeshStandardMaterial({
-            color: '#0c2328',
-            emissive: '#144650',
-            emissiveIntensity: 0.3,
-            roughness: 0.18,
-            metalness: 0.35,
+            color: isAbyssalGrottoPrime ? '#10363f' : '#0c2328',
+            emissive: isAbyssalGrottoPrime ? '#1f6f7d' : '#144650',
+            emissiveIntensity: isAbyssalGrottoPrime ? 0.44 : 0.3,
+            roughness: isAbyssalGrottoPrime ? 0.08 : 0.18,
+            metalness: isAbyssalGrottoPrime ? 0.52 : 0.35,
             transparent: true,
-            opacity: 0.72,
+            opacity: isAbyssalGrottoPrime ? 0.8 : 0.72,
           })
           for (const [xFactor, zFactor, sx, sz] of [
             [0.22, 0.52, 7.2, 1.8],
@@ -1309,6 +1421,7 @@ class VibeQuake {
 
     this.applyStructureViewMode()
     this.applyGlobalIllumination()
+    this.spawnWeaponUpgrades()
   }
 
   private applyGlobalIllumination() {
@@ -1337,8 +1450,8 @@ class VibeQuake {
         this.bloomPass.enabled = true
         this.bloomPass.strength = 0.35
       }
-      const fogColor = activeMap.id === 'abyssal-grotto' ? '#041115' : activeMap.id === 'dark-caverns' ? '#080604' : '#010101'
-      const fogFar = activeMap.id === 'abyssal-grotto' ? 30 : activeMap.id === 'dark-caverns' ? 34 : 44
+      const fogColor = activeMap.id === 'abyssal-grotto-prime' ? '#05232b' : activeMap.id === 'abyssal-grotto' ? '#041115' : activeMap.id === 'dark-caverns' ? '#080604' : '#010101'
+      const fogFar = activeMap.id === 'abyssal-grotto-prime' ? 28 : activeMap.id === 'abyssal-grotto' ? 30 : activeMap.id === 'dark-caverns' ? 34 : 44
       this.scene.fog = new THREE.Fog(fogColor, 8, fogFar)
       this.renderer.toneMappingExposure = 0.7
     }
@@ -1800,6 +1913,7 @@ class VibeQuake {
       group.position.y = visualAsset ? initialEnemyGround : initialEnemyGround + 1.1
       this.scene.add(group)
       const enemy: Enemy = {
+        id: `${activeMap.id}-enemy-${index}`,
         group,
         core,
         hitbox,
@@ -1852,6 +1966,168 @@ class VibeQuake {
       return 0.95 * scale
     }
     return 0.12
+  }
+
+  private isAbyssalFamilyMap() {
+    return activeMap.id === 'abyssal-grotto' || activeMap.id === 'abyssal-grotto-prime'
+  }
+
+  private getWeaponCooldown() {
+    if (this.weaponUpgradeTier >= 2) {
+      return 0.065
+    }
+    if (this.weaponUpgradeTier === 1) {
+      return 0.09
+    }
+    return 0.12
+  }
+
+  private getWeaponDamageMultiplier() {
+    if (this.weaponUpgradeTier >= 2) {
+      return 2.5
+    }
+    if (this.weaponUpgradeTier === 1) {
+      return 1.7
+    }
+    return 1
+  }
+
+  private getProjectileImpactColor() {
+    if (this.weaponUpgradeTier >= 2) {
+      return '#76f7ff'
+    }
+    if (this.weaponUpgradeTier === 1) {
+      return '#ff9e57'
+    }
+    return '#ffcf63'
+  }
+
+  private spawnWeaponUpgrades() {
+    for (const pickup of this.weaponUpgradePickups) {
+      this.scene.remove(pickup.group)
+      pickup.group.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose()
+          ;(child.material as THREE.Material).dispose()
+        }
+      })
+    }
+    this.weaponUpgradePickups.length = 0
+
+    if (!this.isAbyssalFamilyMap()) {
+      return
+    }
+
+    const pickupSpecs: Array<{ tier: 1 | 2; x: number; z: number }> = [
+      // Hidden toward opposite corners of the arena.
+      { tier: 1, x: WORLD_MIN_X + 5.4, z: WORLD_MAX_Z - 6.2 },
+      { tier: 2, x: WORLD_MAX_X - 6.1, z: WORLD_MIN_Z + 5.1 },
+    ]
+
+    for (const spec of pickupSpecs) {
+      const color = spec.tier === 1 ? '#ffb96b' : '#85fbff'
+      const emissive = spec.tier === 1 ? '#ff7f42' : '#35b8d2'
+      const spawn = this.resolveOpenSpawn(new THREE.Vector3(spec.x, this.floorLevel + 0.6, spec.z), this.floorLevel + 0.5, 0.6)
+
+      const core = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.25, 0),
+        new THREE.MeshStandardMaterial({
+          color,
+          emissive,
+          emissiveIntensity: 1.1,
+          roughness: 0.25,
+          metalness: 0.6,
+        }),
+      )
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(0.42, 0.04, 8, 24),
+        new THREE.MeshStandardMaterial({
+          color: '#0d1018',
+          emissive: color,
+          emissiveIntensity: 0.95,
+          roughness: 0.2,
+          metalness: 0.8,
+        }),
+      )
+      ring.rotation.x = Math.PI / 2
+
+      const group = new THREE.Group()
+      group.add(core, ring)
+      group.position.copy(spawn)
+      group.position.y += 0.5
+      group.userData.id = `${activeMap.id}-pickup-tier-${spec.tier}`
+
+      const light = new THREE.PointLight(color, spec.tier === 1 ? 3 : 4.2, spec.tier === 1 ? 9 : 11, 2)
+      light.position.y = 0.18
+      group.add(light)
+      this.scene.add(group)
+
+      this.weaponUpgradePickups.push({
+        group,
+        light,
+        basePosition: group.position.clone(),
+        tier: spec.tier,
+        spinOffset: Math.random() * Math.PI * 2,
+        collected: false,
+      })
+    }
+  }
+
+  private resetWeaponUpgrades() {
+    this.weaponUpgradeTier = 0
+    for (const pickup of this.weaponUpgradePickups) {
+      pickup.collected = false
+      pickup.group.visible = true
+      pickup.group.position.copy(pickup.basePosition)
+      pickup.light.intensity = pickup.tier === 1 ? 3 : 4.2
+    }
+  }
+
+  private updateWeaponUpgrades(delta: number) {
+    if (this.weaponUpgradePickups.length === 0) {
+      return
+    }
+
+    const now = performance.now() * 0.001
+    for (const pickup of this.weaponUpgradePickups) {
+      if (pickup.collected) {
+        continue
+      }
+
+      const bob = Math.sin(now * 2.6 + pickup.spinOffset) * 0.08
+      pickup.group.position.y = pickup.basePosition.y + bob
+      pickup.group.rotation.y += delta * (0.9 + pickup.tier * 0.35)
+      pickup.group.rotation.x = Math.sin(now * 1.4 + pickup.spinOffset) * 0.12
+
+      const distance = pickup.group.position.distanceTo(this.player)
+      if (distance > 1.25) {
+        continue
+      }
+
+      pickup.collected = true
+      pickup.group.visible = false
+      pickup.light.intensity = 0
+      this.weaponUpgradeTier = Math.max(this.weaponUpgradeTier, pickup.tier)
+
+      // Send pickup collection to server for multiplayer sync
+      if (this.isMultiplayerJoined() && pickup.group.userData.id) {
+        this.networkClient?.sendCollectPickup(pickup.group.userData.id)
+      }
+
+      const burstColor = pickup.tier === 1 ? '#ff9e57' : '#76f7ff'
+      this.spawnImpact(pickup.group.position, burstColor, pickup.tier === 1 ? 1.8 : 2.4)
+      this.hud.status.textContent = pickup.tier === 1
+        ? 'Weapon upgrade found: Pulse Core I online.'
+        : 'Weapon upgrade found: Pulse Core II online. Firepower maxed.'
+    }
+  }
+
+  private getEnemyVisualScaleMultiplier(kind: Enemy['visualKind']) {
+    // Make the green spiky blob variant significantly larger.
+    if (kind === 'blob') {
+      return 3
+    }
+    return 1
   }
 
   private rollEnemyArchetype() {
@@ -1907,13 +2183,15 @@ class VibeQuake {
 
   private configureEnemy(enemy: Enemy, archetype: EnemyArchetype) {
     const health = this.rollEnemyHealth(archetype)
-    enemy.group.scale.setScalar(archetype.scale)
+    const visualScaleMultiplier = this.getEnemyVisualScaleMultiplier(enemy.visualKind)
+    const totalScale = archetype.scale * visualScaleMultiplier
+    enemy.group.scale.setScalar(totalScale)
     if (enemy.visualKind === 'fallback') {
       enemy.core.material = archetype.coreMaterial
     }
     enemy.speed = archetype.speed
-    enemy.radius = archetype.radius
-    enemy.aimHeight = this.getVisualAimHeight(enemy.visualKind, archetype.scale)
+    enemy.radius = archetype.radius * visualScaleMultiplier
+    enemy.aimHeight = this.getVisualAimHeight(enemy.visualKind, totalScale)
     enemy.health = health
     enemy.maxHealth = health
     enemy.archetypeName = archetype.name
@@ -1922,6 +2200,510 @@ class VibeQuake {
       ring.visible = index < archetype.ringCount
       ring.position.y = (index - (archetype.ringCount - 1) * 0.5) * 0.18
       ring.scale.setScalar(0.9 + index * 0.12 + archetype.scale * 0.08)
+    }
+  }
+
+  private initializeMultiplayer() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const proxyUrl = `${protocol}//${window.location.host}/ws`
+    const directBackendUrl = `${protocol}//${window.location.hostname}:3001/ws`
+    const wsUrls = import.meta.env.DEV
+      ? Array.from(new Set([proxyUrl, directBackendUrl]))
+      : [proxyUrl]
+
+    const callbacks: NetworkCallbacks = {
+      onWelcome: (playerId, room) => {
+        console.log('[Multiplayer] Joined as player', playerId)
+        console.log('[Multiplayer] Room mapId:', room.mapId)
+        console.log('[Multiplayer] Players in room:', Object.keys(room.players))
+        this.myPlayerId = playerId
+        
+        // Use server-provided spawn position
+        const myState = room.players[playerId]
+        if (myState) {
+          this.player.set(myState.position.x, myState.position.y, myState.position.z)
+          this.player.y = this.getGroundHeightAt(this.player.x, this.player.z, this.worldCeiling) + this.floorLevel
+          this.yaw = myState.yaw
+          this.pitch = myState.pitch
+          console.log('[Multiplayer] Spawned at', myState.position, 'facing yaw', myState.yaw)
+        }
+        
+        this.handleRoomState(room)
+        const playersOnline = Object.keys(room.players).length
+        const roomLabel = room.roomId ?? room.mapId
+        this.hud.status.textContent = `Multiplayer connected (${playersOnline} in ${roomLabel}).`
+        if (this.cheatsEnabled && this.godModeEnabled) {
+          this.networkClient?.sendInvulnerable(true)
+        }
+      },
+      onWorldDirectory: (worlds) => {
+        this.worldDirectory = worlds
+        this.renderWorldDirectory()
+      },
+      onMapPreviewState: (room) => {
+        this.previewRoomState = room
+      },
+      onPlayerJoined: (player) => {
+        console.log('[Multiplayer] Player joined:', player.name)
+        this.addRemotePlayer(player)
+        this.hud.status.textContent = `${player.name} joined the room.`
+      },
+      onPlayerLeft: (playerId) => {
+        console.log('[Multiplayer] Player left:', playerId)
+        this.removeRemotePlayer(playerId)
+        this.hud.status.textContent = 'A player left the room.'
+      },
+      onPlayerUpdate: (playerId, state) => {
+        if (playerId === this.myPlayerId) {
+          if (state.position !== undefined) {
+            this.player.set(state.position.x, state.position.y, state.position.z)
+            this.player.y = this.getGroundHeightAt(this.player.x, this.player.z, this.worldCeiling) + this.floorLevel
+            console.log('[Multiplayer] Server updated position to', state.position)
+          }
+          if (state.yaw !== undefined) {
+            this.yaw = state.yaw
+          }
+          if (state.pitch !== undefined) {
+            this.pitch = state.pitch
+          }
+          if (state.health !== undefined) {
+            this.healthValue = state.health
+          }
+          if (state.score !== undefined) {
+            this.scoreValue = Math.max(this.scoreValue, state.score)
+          }
+          if (state.weaponTier !== undefined) {
+            this.weaponUpgradeTier = Math.max(this.weaponUpgradeTier, state.weaponTier)
+          }
+          if (state.invulnerable !== undefined) {
+            this.godModeEnabled = this.cheatsEnabled && state.invulnerable
+          }
+          if (state.isDead === true && !this.gameOverActive) {
+            this.damagePlayer(999)
+          }
+          return
+        }
+        this.updateRemotePlayer(playerId, state)
+      },
+      onEnemyUpdate: (enemyId, state) => {
+        // Find and update enemy
+        const enemy = this.enemies.find((e) => e.id === enemyId)
+        if (enemy && state.health !== undefined) {
+          enemy.health = state.health
+        }
+      },
+      onEnemySpawn: (enemyState) => {
+        // Respawn enemy
+        const enemy = this.enemies.find((e) => e.id === enemyState.id)
+        if (enemy) {
+          enemy.health = enemyState.maxHealth
+          enemy.group.position.set(enemyState.position.x, enemyState.position.y, enemyState.position.z)
+          enemy.group.visible = true
+        }
+      },
+      onEnemyDied: (enemyId, killerId) => {
+        const enemy = this.enemies.find((e) => e.id === enemyId)
+        if (enemy) {
+          enemy.health = 0
+          enemy.group.visible = false
+        }
+        if (killerId === this.myPlayerId) {
+          this.scoreValue += 1
+        }
+      },
+      onProjectileSpawn: (projectile) => {
+        // Spawn visual projectile from other players
+        if (projectile.playerId !== this.myPlayerId) {
+          this.spawnRemoteProjectile(projectile)
+        }
+      },
+      onPickupCollected: (pickupId, playerId) => {
+        const pickup = this.weaponUpgradePickups.find((p) => p.group.userData.id === pickupId)
+        if (pickup) {
+          pickup.collected = true
+          pickup.group.visible = false
+        }
+        // Update remote player's weapon tier
+        const remotePlayer = this.getRemotePlayer(playerId)
+        if (remotePlayer) {
+          const tier = pickupId.includes('tier-2') ? 2 : 1
+          remotePlayer.state.weaponTier = tier
+        }
+      },
+      onStateSync: (room) => {
+        this.handleRoomState(room)
+      },
+    }
+
+    this.networkClient = new NetworkClient(callbacks)
+    this.networkClient.connect(wsUrls)
+    this.networkClient.setMapPreview(activeMap.id)
+    this.hud.status.textContent = 'Connected to lobby. Click Engage Arena to join a live world.'
+  }
+
+  private isMultiplayerJoined() {
+    return this.networkClient?.isConnected() === true && this.myPlayerId !== null
+  }
+
+  private requestWorldJoinIfNeeded() {
+    if (!this.networkClient?.isConnected() || this.hasRequestedWorldJoin || this.myPlayerId !== null) {
+      return
+    }
+    const playerName = localStorage.getItem('playerName') || 'Player'
+    const mapId = activeMap.id
+    this.hasRequestedWorldJoin = true
+    console.log('[Multiplayer] Joining room with mapId:', mapId, 'as', playerName)
+    this.networkClient.join(playerName, mapId)
+    this.hud.status.textContent = 'Joining world...'
+  }
+
+  private renderWorldDirectory() {
+    const mapButtons = this.hud.intro.querySelectorAll<HTMLButtonElement>('.map-button')
+    const worldDirectoryElement = this.hud.intro.querySelector<HTMLDivElement>('[data-world-directory]')
+    const summariesByMap = new Map<string, { players: number; worlds: number; maxPlayers: number }>()
+
+    for (const world of this.worldDirectory) {
+      const current = summariesByMap.get(world.mapId) ?? { players: 0, worlds: 0, maxPlayers: 0 }
+      current.players += world.players
+      current.worlds += 1
+      current.maxPlayers += world.maxPlayers
+      summariesByMap.set(world.mapId, current)
+    }
+
+    for (const button of mapButtons) {
+      const mapId = button.getAttribute('data-map-id')
+      const mapName = button.getAttribute('data-map-name') ?? button.textContent?.trim() ?? 'Arena'
+      if (!mapId) {
+        continue
+      }
+      const summary = summariesByMap.get(mapId)
+      if (!summary || summary.worlds === 0) {
+        button.textContent = `${mapName} (0 online)`
+        continue
+      }
+      button.textContent = `${mapName} (${summary.players}/${summary.maxPlayers}, ${summary.worlds} world${summary.worlds === 1 ? '' : 's'})`
+    }
+
+    if (!worldDirectoryElement) {
+      return
+    }
+
+    const activeMapWorlds = this.worldDirectory
+      .filter((world) => world.mapId === activeMap.id)
+      .sort((left, right) => left.startedAt - right.startedAt)
+
+    worldDirectoryElement.replaceChildren()
+    if (activeMapWorlds.length === 0) {
+      const empty = document.createElement('p')
+      empty.className = 'world-directory-empty'
+      empty.textContent = 'No active worlds yet. Joining will create one.'
+      worldDirectoryElement.append(empty)
+      return
+    }
+
+    for (const world of activeMapWorlds) {
+      const row = document.createElement('div')
+      row.className = 'world-directory-row'
+
+      const label = document.createElement('span')
+      label.className = 'world-directory-label'
+      label.textContent = world.roomId
+
+      const occupancy = document.createElement('span')
+      occupancy.className = 'world-directory-occupancy'
+      occupancy.textContent = `${world.players}/${world.maxPlayers}`
+
+      row.append(label, occupancy)
+      worldDirectoryElement.append(row)
+    }
+  }
+
+  private handleRoomState(room: RoomState) {
+    const nextRemoteIds = new Set<string>()
+
+    for (const [playerId, playerState] of Object.entries(room.players)) {
+      if (playerId === this.myPlayerId) {
+        this.weaponUpgradeTier = Math.max(this.weaponUpgradeTier, playerState.weaponTier)
+        this.healthValue = playerState.health
+        this.scoreValue = Math.max(this.scoreValue, playerState.score)
+        this.godModeEnabled = this.cheatsEnabled && playerState.invulnerable
+        continue
+      }
+
+      nextRemoteIds.add(playerId)
+      if (this.hasRemotePlayer(playerId)) {
+        this.updateRemotePlayer(playerId, playerState)
+      } else {
+        this.addRemotePlayer(playerState)
+      }
+    }
+
+    for (const playerId of this.getRemotePlayerIds()) {
+      if (!nextRemoteIds.has(playerId)) {
+        this.removeRemotePlayer(playerId)
+      }
+    }
+
+    for (const enemy of this.enemies) {
+      const sharedEnemy = room.enemies[enemy.id]
+      if (!sharedEnemy) {
+        continue
+      }
+      enemy.maxHealth = sharedEnemy.maxHealth
+      enemy.health = sharedEnemy.health
+      enemy.group.position.set(sharedEnemy.position.x, sharedEnemy.position.y, sharedEnemy.position.z)
+      enemy.group.visible = !sharedEnemy.isDead
+    }
+
+    for (const pickup of this.weaponUpgradePickups) {
+      const pickupId = pickup.group.userData.id as string | undefined
+      if (!pickupId) {
+        continue
+      }
+      const sharedPickup = room.pickups[pickupId]
+      if (!sharedPickup) {
+        continue
+      }
+      pickup.collected = sharedPickup.collected
+      pickup.group.visible = !sharedPickup.collected
+      pickup.light.intensity = sharedPickup.collected ? 0 : pickup.tier === 1 ? 3 : 4.2
+    }
+  }
+
+  private addRemotePlayer(player: PlayerState) {
+    if (this.hasRemotePlayer(player.id) || player.id === this.myPlayerId) {
+      return
+    }
+
+    if (this.useAvatarSystemV2) {
+      this.avatarSystem.upsertRemotePlayer(player)
+      return
+    }
+
+    const mesh = this.createRemotePlayerAvatar()
+    const avatarY = this.getRemoteAvatarBaseY(player.position.y)
+    mesh.position.set(player.position.x, avatarY, player.position.z)
+    mesh.castShadow = true
+    this.scene.add(mesh)
+
+    // Create name label
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')!
+    canvas.width = 256
+    canvas.height = 64
+    context.fillStyle = 'rgba(0, 0, 0, 0.6)'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    context.font = 'bold 24px sans-serif'
+    context.fillStyle = '#ffffff'
+    context.textAlign = 'center'
+    context.fillText(player.name, canvas.width / 2, canvas.height / 2 + 8)
+
+    const texture = new THREE.CanvasTexture(canvas)
+    const spriteMaterial = new THREE.SpriteMaterial({ map: texture })
+    const sprite = new THREE.Sprite(spriteMaterial)
+    sprite.scale.set(2, 0.5, 1)
+    sprite.position.set(player.position.x, avatarY + 2.2, player.position.z)
+    this.scene.add(sprite)
+
+    this.remotePlayers.set(player.id, { state: player, mesh, nameLabel: sprite })
+  }
+
+  private createRemotePlayerAvatar() {
+    const avatar = new THREE.Group()
+
+    const suitMaterial = new THREE.MeshStandardMaterial({
+      color: '#2f7dff',
+      emissive: '#123e93',
+      emissiveIntensity: 0.28,
+      metalness: 0.35,
+      roughness: 0.55,
+    })
+    const armorMaterial = new THREE.MeshStandardMaterial({
+      color: '#e6f2ff',
+      metalness: 0.58,
+      roughness: 0.24,
+    })
+    const visorMaterial = new THREE.MeshStandardMaterial({
+      color: '#8be9ff',
+      emissive: '#5fd4ff',
+      emissiveIntensity: 0.55,
+      metalness: 0.2,
+      roughness: 0.2,
+    })
+    const weaponMaterial = new THREE.MeshStandardMaterial({
+      color: '#28303f',
+      emissive: '#8be9ff',
+      emissiveIntensity: 0.16,
+      metalness: 0.52,
+      roughness: 0.36,
+    })
+
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.78, 0.34), suitMaterial)
+    torso.position.set(0, 1.18, 0)
+    torso.castShadow = true
+    avatar.add(torso)
+
+    const shoulders = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.12, 0.36), armorMaterial)
+    shoulders.position.set(0, 1.58, 0)
+    shoulders.castShadow = true
+    avatar.add(shoulders)
+
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 18, 14), armorMaterial)
+    head.position.set(0, 1.82, 0)
+    head.castShadow = true
+    avatar.add(head)
+
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.1, 0.2), visorMaterial)
+    visor.position.set(0, 1.82, 0.13)
+    visor.castShadow = true
+    avatar.add(visor)
+
+    for (const side of [-1, 1]) {
+      const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.085, 0.46, 4, 8), suitMaterial)
+      arm.position.set(0.33 * side, 1.22, 0)
+      arm.castShadow = true
+      avatar.add(arm)
+
+      const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.56, 4, 8), suitMaterial)
+      leg.position.set(0.15 * side, 0.58, 0)
+      leg.castShadow = true
+      avatar.add(leg)
+
+      const boot = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.28), armorMaterial)
+      boot.position.set(0.15 * side, 0.2, 0.05)
+      boot.castShadow = true
+      avatar.add(boot)
+    }
+
+    const weapon = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.6), weaponMaterial)
+    weapon.position.set(0.28, 1.08, 0.24)
+    weapon.rotation.x = 0.12
+    weapon.castShadow = true
+    avatar.add(weapon)
+
+    return avatar
+  }
+
+  private disposeObject3D(root: THREE.Object3D) {
+    root.traverse((child) => {
+      if (!(child instanceof THREE.Mesh)) {
+        return
+      }
+      child.geometry.dispose()
+      const materials = Array.isArray(child.material) ? child.material : [child.material]
+      for (const material of materials) {
+        material.dispose()
+      }
+    })
+  }
+
+  private removeRemotePlayer(playerId: string) {
+    if (this.useAvatarSystemV2) {
+      this.avatarSystem.removeRemotePlayer(playerId)
+      return
+    }
+
+    const remotePlayer = this.remotePlayers.get(playerId)
+    if (!remotePlayer) {
+      return
+    }
+
+    this.scene.remove(remotePlayer.mesh)
+    this.scene.remove(remotePlayer.nameLabel)
+    this.disposeObject3D(remotePlayer.mesh)
+    const labelMaterial = remotePlayer.nameLabel.material as THREE.SpriteMaterial
+    labelMaterial.map?.dispose()
+    labelMaterial.dispose()
+
+    this.remotePlayers.delete(playerId)
+  }
+
+  private updateRemotePlayer(playerId: string, state: Partial<PlayerState>) {
+    if (this.useAvatarSystemV2) {
+      this.avatarSystem.updateRemotePlayer(playerId, state)
+      return
+    }
+
+    const remotePlayer = this.remotePlayers.get(playerId)
+    if (!remotePlayer) {
+      return
+    }
+
+    // Update state
+    Object.assign(remotePlayer.state, state)
+
+    // Update visual position
+    if (state.position) {
+      const avatarY = this.getRemoteAvatarBaseY(state.position.y)
+      remotePlayer.mesh.position.set(state.position.x, avatarY, state.position.z)
+      remotePlayer.nameLabel.position.set(state.position.x, avatarY + 2.2, state.position.z)
+    }
+
+    // Update rotation
+    if (state.yaw !== undefined) {
+      remotePlayer.mesh.rotation.y = state.yaw
+    }
+  }
+
+  private spawnRemoteProjectile(projectile: { position: { x: number; y: number; z: number }; direction: { x: number; y: number; z: number }; tier: number }) {
+    // Create a visual projectile (simplified, won't do damage)
+    const colors = ['#ffcf63', '#ff9e57', '#76f7ff']
+    const color = colors[projectile.tier] || colors[0]
+    
+    const geometry = new THREE.SphereGeometry(0.035 + projectile.tier * 0.015, 6, 6)
+    const material = new THREE.MeshBasicMaterial({ color })
+    const mesh = new THREE.Mesh(geometry, material)
+    mesh.position.set(projectile.position.x, projectile.position.y, projectile.position.z)
+
+    const light = new THREE.PointLight(color, 2, 5, 2)
+    mesh.add(light)
+
+    this.scene.add(mesh)
+
+    // Animate and remove after a short time
+    const direction = new THREE.Vector3(projectile.direction.x, projectile.direction.y, projectile.direction.z)
+    const velocity = direction.multiplyScalar(40)
+    
+    const startTime = Date.now()
+    const duration = 2000
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      if (elapsed > duration) {
+        this.scene.remove(mesh)
+        mesh.geometry.dispose()
+        ;(mesh.material as THREE.Material).dispose()
+        return
+      }
+      
+      mesh.position.addScaledVector(velocity, 0.016)
+      requestAnimationFrame(animate)
+    }
+    
+    animate()
+  }
+
+  private sendInputUpdate() {
+    if (!this.isMultiplayerJoined()) {
+      return
+    }
+
+    const now = Date.now()
+    if (now - this.lastInputSentAt < this.inputSendInterval) {
+      return
+    }
+
+    this.lastInputSentAt = now
+    this.networkClient?.sendInput(
+      { x: this.player.x, y: this.player.y, z: this.player.z },
+      this.yaw,
+      this.pitch,
+    )
+  }
+
+  private clearEnemyBolts() {
+    for (let index = this.enemyBolts.length - 1; index >= 0; index -= 1) {
+      this.disposeEnemyBolt(index)
     }
   }
 
@@ -1940,6 +2722,10 @@ class VibeQuake {
       return
     }
     if (this.hud.intro.dataset.hidden !== 'true') {
+      // Keep the minimap and world-state HUD live while browsing arenas in the menu.
+      this.updateLook()
+      this.updateFps(delta)
+      this.syncHud()
       return
     }
     this.updateLook()
@@ -1950,10 +2736,16 @@ class VibeQuake {
     this.updateWeapon(delta)
     this.updateProjectiles(delta)
     this.updateEnemies(delta)
-    this.updateEnemyBolts(delta)
+    if (this.isMultiplayerJoined()) {
+      this.clearEnemyBolts()
+    } else {
+      this.updateEnemyBolts(delta)
+    }
     this.updateImpacts(delta)
+    this.updateWeaponUpgrades(delta)
     this.regenerateHealth(delta)
     this.updateFps(delta)
+    this.sendInputUpdate()
     this.syncHud()
   }
 
@@ -2236,19 +3028,30 @@ class VibeQuake {
     if (now < this.canShootAt) {
       return
     }
-    this.canShootAt = now + 0.12
+    this.canShootAt = now + this.getWeaponCooldown()
     this.flashTimer = 1
 
     const shotDirection = this.camera.getWorldDirection(this.aimDirection.clone())
     const muzzlePoint = this.muzzleFlash.getWorldPosition(new THREE.Vector3())
     const shotNodes = this.computeShotNodes(shotDirection)
     this.spawnProjectile(muzzlePoint, shotNodes)
+
+    // Send shot to server for multiplayer
+    if (this.isMultiplayerJoined()) {
+      this.networkClient?.sendShoot(
+        { x: muzzlePoint.x, y: muzzlePoint.y, z: muzzlePoint.z },
+        { x: shotDirection.x, y: shotDirection.y, z: shotDirection.z },
+        this.weaponUpgradeTier,
+      )
+    }
   }
 
   private computeShotNodes(direction: THREE.Vector3) {
     const nodes: ProjectileNode[] = []
     const rayDirection = direction.clone().normalize()
-    const maxRange = 90
+    const maxRange = 90 + this.weaponUpgradeTier * 10
+    const damageMultiplier = this.getWeaponDamageMultiplier()
+    const impactColor = this.getProjectileImpactColor()
 
     this.raycaster.set(this.camera.position, rayDirection)
     this.raycaster.far = maxRange
@@ -2265,12 +3068,12 @@ class VibeQuake {
     const remainingAfterAim = Math.max(0, maxRange - aimHit.distance)
 
     if (directEnemy) {
-      this.damageEnemy(directEnemy, initialPoint)
-      nodes.push({ point: initialPoint, impactColor: '#ffcf63', damageOnArrival: false })
+      this.damageEnemy(directEnemy, initialPoint, damageMultiplier)
+      nodes.push({ point: initialPoint, impactColor, damageOnArrival: false })
       return nodes
     }
 
-    nodes.push({ point: initialPoint, impactColor: '#ffcf63', damageOnArrival: false })
+    nodes.push({ point: initialPoint, impactColor, damageOnArrival: false })
     if (remainingAfterAim <= 0.01) {
       return nodes
     }
@@ -2287,7 +3090,7 @@ class VibeQuake {
     }
     bounceOrigin.addScaledVector(bounceDirection, 0.18)
     let remaining = remainingAfterAim
-    let bouncesLeft = 3
+    let bouncesLeft = 3 + this.weaponUpgradeTier
 
     while (remaining > 0.01) {
       this.raycaster.set(bounceOrigin, bounceDirection)
@@ -2306,11 +3109,17 @@ class VibeQuake {
       )
 
       if (bounceEnemy) {
-        nodes.push({ point: bounceHit.point.clone(), enemy: bounceEnemy, impactColor: '#ffcf63', damageOnArrival: true })
+        nodes.push({
+          point: bounceHit.point.clone(),
+          enemy: bounceEnemy,
+          impactColor,
+          damageOnArrival: true,
+          damageMultiplier,
+        })
         break
       }
 
-      nodes.push({ point: bounceHit.point.clone(), impactColor: '#ffcf63', damageOnArrival: false })
+      nodes.push({ point: bounceHit.point.clone(), impactColor, damageOnArrival: false })
       bouncesLeft -= 1
       if (bouncesLeft <= 0) {
         break
@@ -2345,9 +3154,13 @@ class VibeQuake {
       return
     }
     initialDirection.normalize()
+    const projectileRadius = this.weaponUpgradeTier >= 2 ? 0.095 : this.weaponUpgradeTier === 1 ? 0.065 : 0.035
+    const projectileTail = this.weaponUpgradeTier >= 2 ? 0.17 : this.weaponUpgradeTier === 1 ? 0.115 : 0.07
+    const projectileColor = this.getProjectileImpactColor()
+    const projectileOpacity = this.weaponUpgradeTier >= 2 ? 0.98 : this.weaponUpgradeTier === 1 ? 0.95 : 0.92
     const projectile = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.035, 0.07, PROJECTILE_LENGTH, 10),
-      new THREE.MeshBasicMaterial({ color: '#ffd84f', transparent: true, opacity: 0.92 }),
+      new THREE.CylinderGeometry(projectileRadius, projectileTail, PROJECTILE_LENGTH + this.weaponUpgradeTier * 0.55, 12),
+      new THREE.MeshBasicMaterial({ color: projectileColor, transparent: true, opacity: projectileOpacity }),
     )
     projectile.position.copy(start).addScaledVector(initialDirection, -PROJECTILE_HALF_LENGTH)
     projectile.quaternion.copy(
@@ -2360,20 +3173,34 @@ class VibeQuake {
       nodes,
       segmentIndex: 0,
       segmentProgress: 0,
-      speed: 78,
+      speed: 78 + this.weaponUpgradeTier * 22,
       remaining: totalDistance,
+      baseOpacity: projectileOpacity,
     })
   }
 
-  private damageEnemy(enemy: Enemy, point: THREE.Vector3) {
+  private damageEnemy(enemy: Enemy, point: THREE.Vector3, powerMultiplier = 1) {
     if (enemy.health <= 0) {
       return
     }
     const criticalHit = Math.random() < CRITICAL_HIT_CHANCE
-    const damage = criticalHit ? 2 : 1
+    const baseDamage = criticalHit ? 2 : 1
+    const damage = Math.max(1, Math.round(baseDamage * powerMultiplier))
     const appliedDamage = Math.min(damage, enemy.health)
+
+    // Send damage to server for multiplayer sync
+    if (this.isMultiplayerJoined() && enemy.id) {
+      this.networkClient?.sendDamageEnemy(enemy.id, appliedDamage)
+      const impactScale = 1 + (powerMultiplier - 1) * 0.5
+      this.spawnImpact(point, this.getProjectileImpactColor(), impactScale)
+      this.showHitCounter(appliedDamage, criticalHit)
+      return
+    }
+
     enemy.health -= appliedDamage
-    this.spawnImpact(point, '#ffcf63')
+
+    const impactScale = 1 + (powerMultiplier - 1) * 0.5
+    this.spawnImpact(point, this.getProjectileImpactColor(), impactScale)
     this.showHitCounter(appliedDamage, criticalHit)
     if (enemy.health > 0) {
       return
@@ -2470,9 +3297,44 @@ class VibeQuake {
       .addScaledVector(this.cameraUp, verticalSign * verticalOffset)
   }
 
-  private spawnImpact(point: THREE.Vector3, color: string) {
+  private tryMoveEnemy(enemy: Enemy, desiredVelocity: THREE.Vector3, delta: number) {
+    const turnAngles = [0, Math.PI / 6, -Math.PI / 6, Math.PI / 3, -Math.PI / 3, Math.PI / 2, -Math.PI / 2]
+
+    for (const angle of turnAngles) {
+      const candidateVelocity = angle === 0
+        ? desiredVelocity
+        : desiredVelocity.clone().applyAxisAngle(this.upAxis, angle)
+      if (candidateVelocity.lengthSq() <= 0.000001) {
+        continue
+      }
+      const next = this.enemyLoopNext.copy(enemy.group.position).addScaledVector(candidateVelocity, delta)
+      if (!this.isPositionBlocked(next.x, next.z, enemy.radius)) {
+        enemy.group.position.copy(next)
+        return true
+      }
+    }
+
+    // If fully blocked, probe around the enemy and nudge to the first free pocket.
+    for (let ring = 1; ring <= 3; ring += 1) {
+      const radius = 0.22 * ring
+      for (let step = 0; step < 12; step += 1) {
+        const angle = (step / 12) * Math.PI * 2
+        const probeX = enemy.group.position.x + Math.cos(angle) * radius
+        const probeZ = enemy.group.position.z + Math.sin(angle) * radius
+        if (!this.isPositionBlocked(probeX, probeZ, enemy.radius)) {
+          enemy.group.position.x = probeX
+          enemy.group.position.z = probeZ
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  private spawnImpact(point: THREE.Vector3, color: string, sizeScale = 1) {
     const distance = point.distanceTo(this.camera.position)
-    const radius = 0.045 * clamp(1.15 - distance / 70, 0.3, 1)
+    const radius = 0.045 * sizeScale * clamp(1.15 - distance / 70, 0.3, 1)
     const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 })
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 8, 8), material)
     mesh.position.copy(point)
@@ -2520,14 +3382,14 @@ class VibeQuake {
           this.spawnImpact(node.point, node.impactColor)
         }
         if (node.enemy && node.damageOnArrival) {
-          this.damageEnemy(node.enemy, node.point)
+          this.damageEnemy(node.enemy, node.point, node.damageMultiplier ?? this.getWeaponDamageMultiplier())
           this.disposeProjectile(index)
           travel = 0
           break
         }
       }
 
-      ;(projectile.mesh.material as THREE.MeshBasicMaterial).opacity = clamp(projectile.remaining / 10, 0, 0.92)
+      ;(projectile.mesh.material as THREE.MeshBasicMaterial).opacity = clamp(projectile.remaining / 10, 0, projectile.baseOpacity)
       if (projectile.remaining > 0 && projectile.segmentIndex < projectile.nodes.length) {
         continue
       }
@@ -2554,10 +3416,14 @@ class VibeQuake {
   private updateEnemies(delta: number) {
     const playerFlat = this.enemyLoopPlayerFlat.set(this.player.x, 0, this.player.z)
     const now = performance.now() * 0.001
+    const multiplayerActive = this.isMultiplayerJoined()
     for (const enemy of this.enemies) {
       enemy.mixer?.update(delta)
 
       if (enemy.health <= 0) {
+        if (multiplayerActive) {
+          continue
+        }
         enemy.respawn -= delta
         if (enemy.respawn <= 0) {
           const archetype = this.rollEnemyArchetype()
@@ -2584,9 +3450,8 @@ class VibeQuake {
         .copy(toPlayer)
         .multiplyScalar((distance > 7 ? enemy.speed : -enemy.speed * 0.45) * speedVariation)
         .add(strafe)
-      const next = this.enemyLoopNext.copy(enemy.group.position).addScaledVector(desired, delta)
-      if (!this.isPositionBlocked(next.x, next.z, enemy.radius)) {
-        enemy.group.position.copy(next)
+      if (!multiplayerActive) {
+        this.tryMoveEnemy(enemy, desired, delta)
       }
 
       const enemyGround = this.getGroundHeightAt(enemy.group.position.x, enemy.group.position.z, this.worldCeiling)
@@ -2602,7 +3467,7 @@ class VibeQuake {
         ring.rotation.y = enemy.angle * (0.55 + ringIndex * 0.18)
       }
 
-      if (distance > 2.6 && distance < 28 && now >= enemy.canShootAt) {
+      if (!multiplayerActive && distance > 2.6 && distance < 28 && now >= enemy.canShootAt) {
         const fireOrigin = this.enemyFireOrigin.copy(enemy.group.position).add(new THREE.Vector3(0, enemy.aimHeight, 0))
         const fireDirection = this.enemyFireDirection.copy(this.getEnemyAimPoint()).sub(fireOrigin)
         const fireDistance = fireDirection.length()
@@ -2618,7 +3483,7 @@ class VibeQuake {
         }
       }
 
-      if (distance < 1.9) {
+      if (!multiplayerActive && distance < 1.9) {
         this.damagePlayer(6.25 * delta)
       }
     }
@@ -2658,6 +3523,9 @@ class VibeQuake {
   }
 
   private damagePlayer(amount: number) {
+    if (this.cheatsEnabled && this.godModeEnabled) {
+      return
+    }
     this.healthValue = Math.max(0, this.healthValue - amount)
     this.damagePulse = Math.min(0.75, this.damagePulse + amount * 0.015)
     if (this.healthValue > 0) {
@@ -2666,6 +3534,9 @@ class VibeQuake {
     const finalScore = Math.max(0, this.scoreValue)
     if (finalScore > 0) {
       void this.recordHighScore(finalScore)
+    }
+    if (this.isMultiplayerJoined()) {
+      this.networkClient?.sendDeath(finalScore)
     }
     this.gameOverActive = true
     this.hud.finalScore.textContent = finalScore.toString()
@@ -2677,12 +3548,21 @@ class VibeQuake {
   private handleRespawn = () => {
     this.gameOverActive = false
     this.healthValue = 100
-    this.player.copy(this.resolveOpenSpawn(PLAYER_SPAWN, PLAYER_SPAWN.y))
-    this.player.y = this.getGroundHeightAt(this.player.x, this.player.z, this.worldCeiling) + this.floorLevel
+    
+    // In multiplayer, server will send us a new spawn position
+    if (!this.isMultiplayerJoined()) {
+      this.player.copy(this.resolveOpenSpawn(PLAYER_SPAWN, PLAYER_SPAWN.y))
+      this.player.y = this.getGroundHeightAt(this.player.x, this.player.z, this.worldCeiling) + this.floorLevel
+      this.yaw = 0
+      this.pitch = 0
+    }
+    
     this.velocity.set(0, 0, 0)
-    this.yaw = 0
-    this.pitch = 0
     this.scoreValue = Math.max(0, this.scoreValue - 1)
+    this.resetWeaponUpgrades()
+    if (this.isMultiplayerJoined()) {
+      this.networkClient?.sendRespawn()
+    }
     this.hud.gameOver.setAttribute('data-hidden', 'true')
     this.hud.intro.dataset.hidden = 'true'
     this.hud.status.textContent = 'Suit reconstructed. Re-entering the arena.'
@@ -2690,6 +3570,15 @@ class VibeQuake {
   }
 
   private handleMainMenu = () => {
+    if (this.isMultiplayerJoined()) {
+      this.networkClient?.leaveWorld()
+      this.myPlayerId = null
+      this.hasRequestedWorldJoin = false
+      for (const playerId of this.getRemotePlayerIds()) {
+        this.removeRemotePlayer(playerId)
+      }
+    }
+
     // Reset game over state and show intro menu
     this.gameOverActive = false
     this.healthValue = 100
@@ -2698,6 +3587,7 @@ class VibeQuake {
     this.velocity.set(0, 0, 0)
     this.yaw = 0
     this.pitch = 0
+    this.resetWeaponUpgrades()
     this.hud.gameOver.setAttribute('data-hidden', 'true')
     this.hud.intro.setAttribute('data-hidden', 'false')
     this.hud.status.textContent = 'Click engage, then clear the sentinels.'
@@ -2742,7 +3632,9 @@ class VibeQuake {
     this.hud.fps.textContent = this.fpsValue.toString().padStart(2, '0')
     this.drawMinimap()
     this.hud.hint.textContent = document.pointerLockElement === this.renderer.domElement
-      ? 'WASD move  SHIFT surge  SPACE jump  MOUSE fire'
+      ? this.cheatsEnabled
+        ? `WASD move  SHIFT surge  SPACE jump  MOUSE fire  F10/~ godmode ${this.godModeEnabled ? 'ON' : 'OFF'}`
+        : 'WASD move  SHIFT surge  SPACE jump  MOUSE fire'
       : 'Click engage to capture the mouse'
   }
 
@@ -2777,34 +3669,80 @@ class VibeQuake {
       context.fillRect(min.x, min.y, Math.max(1, max.x - min.x), Math.max(1, max.y - min.y))
     }
 
-    for (const enemy of this.enemies) {
-      if (enemy.health <= 0 || !enemy.group.visible) {
-        continue
+    const usePreviewRoom = !this.isMultiplayerJoined() && this.previewRoomState !== null
+    if (usePreviewRoom && this.previewRoomState) {
+      for (const enemy of Object.values(this.previewRoomState.enemies)) {
+        if (enemy.isDead || enemy.health <= 0) {
+          continue
+        }
+        const point = toMapPoint(enemy.position.x, enemy.position.z)
+        context.beginPath()
+        context.fillStyle = '#ff7d66'
+        context.arc(point.x, point.y, 3.8, 0, Math.PI * 2)
+        context.fill()
       }
-      const point = toMapPoint(enemy.group.position.x, enemy.group.position.z)
-      context.beginPath()
-      context.fillStyle = '#ff7d66'
-      context.arc(point.x, point.y, 3.8, 0, Math.PI * 2)
-      context.fill()
+
+      for (const player of Object.values(this.previewRoomState.players)) {
+        const point = toMapPoint(player.position.x, player.position.z)
+        context.beginPath()
+        context.fillStyle = '#66b8ff'
+        context.arc(point.x, point.y, 4.1, 0, Math.PI * 2)
+        context.fill()
+      }
+    } else {
+      for (const enemy of this.enemies) {
+        if (enemy.health <= 0 || !enemy.group.visible) {
+          continue
+        }
+        const point = toMapPoint(enemy.group.position.x, enemy.group.position.z)
+        context.beginPath()
+        context.fillStyle = '#ff7d66'
+        context.arc(point.x, point.y, 3.8, 0, Math.PI * 2)
+        context.fill()
+      }
+
+      for (const remotePlayer of this.getRemotePlayers()) {
+        const point = toMapPoint(remotePlayer.mesh.position.x, remotePlayer.mesh.position.z)
+        context.beginPath()
+        context.fillStyle = '#66b8ff'
+        context.arc(point.x, point.y, 4.1, 0, Math.PI * 2)
+        context.fill()
+      }
     }
 
-    const playerPoint = toMapPoint(this.player.x, this.player.z)
-    context.beginPath()
-    context.fillStyle = '#f3dfb2'
-    context.arc(playerPoint.x, playerPoint.y, 4.6, 0, Math.PI * 2)
-    context.fill()
+    for (const pickup of this.weaponUpgradePickups) {
+      if (pickup.collected) {
+        continue
+      }
+      const point = toMapPoint(pickup.group.position.x, pickup.group.position.z)
+      context.beginPath()
+      context.fillStyle = '#ffcf63'
+      context.strokeStyle = '#ffa500'
+      context.lineWidth = 2
+      context.arc(point.x, point.y, 4.2, 0, Math.PI * 2)
+      context.fill()
+      context.stroke()
+    }
 
-    const headingLength = 14
-    const rightLength = 5
-    const headingX = -Math.sin(this.yaw)
-    const headingY = -Math.cos(this.yaw)
-    context.beginPath()
-    context.moveTo(playerPoint.x + headingX * headingLength, playerPoint.y + headingY * headingLength)
-    context.lineTo(playerPoint.x - headingX * 5 + headingY * rightLength, playerPoint.y - headingY * 5 - headingX * rightLength)
-    context.lineTo(playerPoint.x - headingX * 5 - headingY * rightLength, playerPoint.y - headingY * 5 + headingX * rightLength)
-    context.closePath()
-    context.fillStyle = '#d8aa57'
-    context.fill()
+    if (!usePreviewRoom) {
+      const playerPoint = toMapPoint(this.player.x, this.player.z)
+      context.beginPath()
+      context.fillStyle = '#f3dfb2'
+      context.arc(playerPoint.x, playerPoint.y, 4.6, 0, Math.PI * 2)
+      context.fill()
+
+      const headingLength = 14
+      const rightLength = 5
+      const headingX = -Math.sin(this.yaw)
+      const headingY = -Math.cos(this.yaw)
+      context.beginPath()
+      context.moveTo(playerPoint.x + headingX * headingLength, playerPoint.y + headingY * headingLength)
+      context.lineTo(playerPoint.x - headingX * 5 + headingY * rightLength, playerPoint.y - headingY * 5 - headingX * rightLength)
+      context.lineTo(playerPoint.x - headingX * 5 - headingY * rightLength, playerPoint.y - headingY * 5 + headingX * rightLength)
+      context.closePath()
+      context.fillStyle = '#d8aa57'
+      context.fill()
+    }
   }
 }
 
@@ -2854,10 +3792,13 @@ export const startGame = async (root: HTMLDivElement) => {
           <label class="map-selector-label">Select Arena:</label>
           <div class="map-buttons">
             ${availableMaps.map(map => `
-              <button type="button" class="map-button ${map.id === loadedMap.id ? 'active' : ''}" data-map-id="${map.id}">
+              <button type="button" class="map-button ${map.id === loadedMap.id ? 'active' : ''}" data-map-id="${map.id}" data-map-name="${map.name}">
                 ${map.name}
               </button>
             `).join('')}
+          </div>
+          <div class="world-directory" data-world-directory>
+            <p class="world-directory-empty">Querying active worlds...</p>
           </div>
         </div>
         <button type="button" data-start>Engage Arena</button>
