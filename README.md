@@ -1,6 +1,6 @@
-# PHOTONIC
+# VibeQuake
 
-PHOTONIC is a browser-first WebGL FPS prototype built with Vite, TypeScript, and Three.js. It aims for the speed and pressure of a classic arena shooter while primarily using procedural content, while still allowing explicitly open-licensed art where it materially improves the prototype.
+VibeQuake is a browser-first WebGL FPS prototype built with Vite, TypeScript, and Three.js. It aims for the speed and pressure of a classic arena shooter while primarily using procedural content, while still allowing explicitly open-licensed art where it materially improves the prototype.
 
 The project now includes a small Node/Express backend for persistent high scores and file-backed map loading/editing, with runtime support for Quake-family `.map` imports normalized into a brush-based arena format.
 
@@ -120,7 +120,7 @@ To load a stored map in the client, open the game with a query parameter such as
 
 ## Open Source Map Repositories
 
-There are open-source FPS map repositories available. For example, Xonotic publishes official map sources in [xonotic/xonotic-maps.pk3dir](https://github.com/xonotic/xonotic-maps.pk3dir). Those maps are authored in Quake-family source formats, and PHOTONIC now imports that class of map by parsing brush geometry and spawn entities into its runtime brush-map contract.
+There are open-source FPS map repositories available. For example, Xonotic publishes official map sources in [xonotic/xonotic-maps.pk3dir](https://github.com/xonotic/xonotic-maps.pk3dir). Those maps are authored in Quake-family source formats, and VibeQuake now imports that class of map by parsing brush geometry and spawn entities into its runtime brush-map contract.
 
 The current importer is intentionally pragmatic: it handles brush/entity source maps and approximates brushes as world-space solids for rendering and collision. That makes Quake-style source maps loadable now, while leaving room for a more exact brush/plane renderer later.
 

@@ -294,6 +294,13 @@
     "createdAt": "2026-03-09T21:05:57.564Z"
   },
   {
+    "id": "70da9357-fb6a-4a7a-96ad-5d7a110c0065",
+    "name": "Anonymous",
+    "score": 1200,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-22T22:17:59.082Z"
+  },
+  {
     "id": "011e6118-5ca7-4cfa-b4a2-5a147efb187a",
     "name": "Anonymous",
     "score": 1000,
@@ -341,6 +348,20 @@
     "score": 900,
     "mapId": "neon-arena",
     "createdAt": "2026-03-08T21:24:14.421Z"
+  },
+  {
+    "id": "fbe2bed5-52a3-4c97-bae7-f7ed0e432304",
+    "name": "Anonymous",
+    "score": 802,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-22T22:21:11.875Z"
+  },
+  {
+    "id": "8d092c48-3528-4a04-99c4-b80d4c171a2e",
+    "name": "Anonymous",
+    "score": 800,
+    "mapId": "abyssal-grotto-prime",
+    "createdAt": "2026-03-22T22:18:47.613Z"
   },
   {
     "id": "b4796a4d-63fd-4cdf-9778-1c1e85578789",
@@ -677,26 +698,5 @@
     "score": 193,
     "mapId": "neon-arena",
     "createdAt": "2026-03-07T22:40:51.772Z"
-  },
-  {
-    "id": "d72ff6dc-8613-4697-b307-afd5bd65cf56",
-    "name": "Anonymous",
-    "score": 193,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:40:51.805Z"
-  },
-  {
-    "id": "8133361f-7607-42f9-bbf7-af4dc7ea69bf",
-    "name": "Anonymous",
-    "score": 193,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:40:52.690Z"
-  },
-  {
-    "id": "92601496-dbae-4c70-b111-5ebc27743e24",
-    "name": "Anonymous",
-    "score": 193,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:40:52.856Z"
   }
 ]

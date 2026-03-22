@@ -8,5 +8,5 @@ if (!app) {
 }
 
 void startGame(app).catch((error) => {
-  app.innerHTML = `<div style="padding:1.5rem;color:#f5efe6;font-family:Georgia, Garamond, serif;">Failed to start PHOTONIC: ${error instanceof Error ? error.message : 'Unknown error'}</div>`
+  app.innerHTML = `<div style="padding:1.5rem;color:#f5efe6;font-family:Georgia, Garamond, serif;">Failed to start VibeQuake: ${error instanceof Error ? error.message : 'Unknown error'}</div>`
 })

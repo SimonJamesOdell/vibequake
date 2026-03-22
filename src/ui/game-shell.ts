@@ -48,14 +48,14 @@ export function mountGameShell(
       <div class="damage-vignette" aria-hidden="true"></div>
       <div class="game-over-overlay" data-game-over data-hidden="true">
         <h2>SUIT BREACH</h2>
-        <p class="game-over-message">Photonic systems offline</p>
+        <p class="game-over-message">VibeQuake systems offline</p>
         <p class="final-score-display">Kills: <strong data-final-score>0</strong></p>
         <button type="button" data-respawn>Reconstruct Suit</button>
         <button type="button" class="secondary-button" data-main-menu>Return to Main Menu</button>
       </div>
       <div class="intro-card" data-intro data-hidden="false">
         <p class="eyebrow">${loadedMap.name}</p>
-        <h1>PHOTONIC</h1>
+        <h1>VibeQuake</h1>
         <p class="intro-copy">${loadedMap.description}</p>
         <div class="map-selector">
           <label class="map-selector-label">Select Arena:</label>

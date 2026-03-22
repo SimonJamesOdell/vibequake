@@ -354,9 +354,9 @@ button.secondary-button:hover {
 
 .intro-card h1 {
   margin: 0.35rem 0 0.7rem;
-  font: 900 clamp(2.4rem, 7vw, 4.7rem)/0.92 'Times New Roman', Georgia, serif;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font: 900 clamp(2rem, 6.2vw, 4.2rem)/0.94 'Times New Roman', Georgia, serif;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 .intro-copy {

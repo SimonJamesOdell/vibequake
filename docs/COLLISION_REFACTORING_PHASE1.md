@@ -153,7 +153,7 @@ Build completed successfully:
 ```
 ✓ 33 modules transformed
 ✓ built in 351ms
-> photonic@0.0.0 build:server
+> vibequake@0.0.0 build:server
 > tsc -p tsconfig.server.json
 (No errors)
 ```

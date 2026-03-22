@@ -226,8 +226,8 @@ class VibeQuake {
     new THREE.SphereGeometry(0.08, 10, 10),
     new THREE.MeshBasicMaterial({ color: '#fff2c4', transparent: true, opacity: 0.35 }),
   )
-  private readonly flashlight = new THREE.SpotLight('#fff1c9', 86, 48, 0.62, 0.78, 1.2)
-  private readonly flashlightCore = new THREE.SpotLight('#fff7d6', 34, 30, 0.28, 0.9, 1.5)
+  private readonly flashlight = new THREE.SpotLight('#fff1c9', 110, 52, 0.62, 0.78, 1.2)
+  private readonly flashlightCore = new THREE.SpotLight('#fff7d6', 42, 34, 0.28, 0.9, 1.5)
   private readonly flashlightTarget = new THREE.Object3D()
   private readonly aimDirection = new THREE.Vector3()
   private readonly enemyFireOrigin = new THREE.Vector3()
@@ -294,7 +294,8 @@ class VibeQuake {
   private fpsValue = 0
   private disposed = false
   private structureViewMode: 'full' | 'layout' = 'full'
-  private globalIlluminationEnabled = true
+  private globalIlluminationEnabled = false
+  private readonly movementSpeedScale = 0.82
   private flyModeEnabled = false
   private lastSpaceTapAt = -10
   private detailLevel: 'full' | 'major' | 'structure' = 'full'
@@ -1644,8 +1645,8 @@ class VibeQuake {
           this.velocity.z += this.moveWish.z * acceleration * delta
         } else {
           const sprinting = isGameActionPressed(this.keys, 'sprint', this.useInputMapV2)
-          const groundWishSpeed = sprinting ? 12.2 : 10.4
-          const airWishSpeed = sprinting ? 10.4 : 9.3
+          const groundWishSpeed = (sprinting ? 12.2 : 10.4) * this.movementSpeedScale
+          const airWishSpeed = (sprinting ? 10.4 : 9.3) * this.movementSpeedScale
           if (this.grounded) {
             this.acceleratePlayer(this.moveWish, groundWishSpeed, sprinting ? 18 : 15, delta)
           } else {
@@ -1663,7 +1664,7 @@ class VibeQuake {
       }
 
       const sprinting = isGameActionPressed(this.keys, 'sprint', this.useInputMapV2) && !this.flyModeEnabled
-      const speedLimit = this.flyModeEnabled ? 8.2 : this.grounded ? (sprinting ? 12.8 : 11.1) : 18
+      const speedLimit = (this.flyModeEnabled ? 8.2 : this.grounded ? (sprinting ? 12.8 : 11.1) : 18) * this.movementSpeedScale
       const lateralSpeed = horizontalLength(this.velocity)
       if (lateralSpeed > speedLimit) {
         const scale = speedLimit / lateralSpeed
@@ -1934,8 +1935,8 @@ class VibeQuake {
       this.flashlight.intensity = 0
       this.flashlightCore.intensity = 0
     } else {
-      this.flashlight.intensity = 118 + Math.sin(this.bobTime * 1.4) * 2.5
-      this.flashlightCore.intensity = 168 + Math.sin(this.bobTime * 1.9) * 4
+      this.flashlight.intensity = 152 + Math.sin(this.bobTime * 1.4) * 3
+      this.flashlightCore.intensity = 218 + Math.sin(this.bobTime * 1.9) * 5
     }
     this.hud.damage.style.opacity = String(this.damagePulse)
     this.hitCounterSystem.update(delta)
