@@ -6,6 +6,7 @@
   "sourceFormat": "brush-map",
   "license": "CC0-1.0",
   "attribution": "Created for VibeQuake",
+  "visualTheme": "gothic-dungeon",
   "bounds": {
     "min": { "x": -32, "y": 0, "z": -32 },
     "max": { "x": 32, "y": 14, "z": 32 }

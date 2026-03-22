@@ -20,6 +20,8 @@ export type BrushSolid = {
   texture?: string
 }
 
+export type ArenaVisualTheme = 'neon-tech' | 'gothic-dungeon' | 'industrial-rust'
+
 export type ArenaMap = {
   id: string
   name: string
@@ -29,6 +31,7 @@ export type ArenaMap = {
   license?: string
   sourceUrl?: string
   attribution?: string
+  visualTheme?: ArenaVisualTheme
   bounds: Bounds3
   brushes: BrushSolid[]
   playerSpawn: Vec3

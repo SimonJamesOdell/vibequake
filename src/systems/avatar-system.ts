@@ -2,6 +2,82 @@ import * as THREE from 'three'
 
 import type { PlayerState } from '../shared/multiplayer'
 
+export function createRemotePlayerAvatar() {
+  const avatar = new THREE.Group()
+
+  const suitMaterial = new THREE.MeshStandardMaterial({
+    color: '#2f7dff',
+    emissive: '#123e93',
+    emissiveIntensity: 0.28,
+    metalness: 0.35,
+    roughness: 0.55,
+  })
+  const armorMaterial = new THREE.MeshStandardMaterial({
+    color: '#e6f2ff',
+    metalness: 0.58,
+    roughness: 0.24,
+  })
+  const visorMaterial = new THREE.MeshStandardMaterial({
+    color: '#8be9ff',
+    emissive: '#5fd4ff',
+    emissiveIntensity: 0.55,
+    metalness: 0.2,
+    roughness: 0.2,
+  })
+  const weaponMaterial = new THREE.MeshStandardMaterial({
+    color: '#28303f',
+    emissive: '#8be9ff',
+    emissiveIntensity: 0.16,
+    metalness: 0.52,
+    roughness: 0.36,
+  })
+
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.78, 0.34), suitMaterial)
+  torso.position.set(0, 1.18, 0)
+  torso.castShadow = true
+  avatar.add(torso)
+
+  const shoulders = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.12, 0.36), armorMaterial)
+  shoulders.position.set(0, 1.58, 0)
+  shoulders.castShadow = true
+  avatar.add(shoulders)
+
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 18, 14), armorMaterial)
+  head.position.set(0, 1.82, 0)
+  head.castShadow = true
+  avatar.add(head)
+
+  const visor = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.1, 0.2), visorMaterial)
+  visor.position.set(0, 1.82, 0.13)
+  visor.castShadow = true
+  avatar.add(visor)
+
+  for (const side of [-1, 1]) {
+    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.085, 0.46, 4, 8), suitMaterial)
+    arm.position.set(0.33 * side, 1.22, 0)
+    arm.castShadow = true
+    avatar.add(arm)
+
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.56, 4, 8), suitMaterial)
+    leg.position.set(0.15 * side, 0.58, 0)
+    leg.castShadow = true
+    avatar.add(leg)
+
+    const boot = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.28), armorMaterial)
+    boot.position.set(0.15 * side, 0.2, 0.05)
+    boot.castShadow = true
+    avatar.add(boot)
+  }
+
+  const weapon = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.6), weaponMaterial)
+  weapon.position.set(0.28, 1.08, 0.24)
+  weapon.rotation.x = 0.12
+  weapon.castShadow = true
+  avatar.add(weapon)
+
+  return avatar
+}
+
 export type RemotePlayerVisual = {
   state: PlayerState
   mesh: THREE.Group
@@ -156,79 +232,7 @@ export class AvatarSystem {
   }
 
   private createRemotePlayerAvatar() {
-    const avatar = new THREE.Group()
-
-    const suitMaterial = new THREE.MeshStandardMaterial({
-      color: '#2f7dff',
-      emissive: '#123e93',
-      emissiveIntensity: 0.28,
-      metalness: 0.35,
-      roughness: 0.55,
-    })
-    const armorMaterial = new THREE.MeshStandardMaterial({
-      color: '#e6f2ff',
-      metalness: 0.58,
-      roughness: 0.24,
-    })
-    const visorMaterial = new THREE.MeshStandardMaterial({
-      color: '#8be9ff',
-      emissive: '#5fd4ff',
-      emissiveIntensity: 0.55,
-      metalness: 0.2,
-      roughness: 0.2,
-    })
-    const weaponMaterial = new THREE.MeshStandardMaterial({
-      color: '#28303f',
-      emissive: '#8be9ff',
-      emissiveIntensity: 0.16,
-      metalness: 0.52,
-      roughness: 0.36,
-    })
-
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.78, 0.34), suitMaterial)
-    torso.position.set(0, 1.18, 0)
-    torso.castShadow = true
-    avatar.add(torso)
-
-    const shoulders = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.12, 0.36), armorMaterial)
-    shoulders.position.set(0, 1.58, 0)
-    shoulders.castShadow = true
-    avatar.add(shoulders)
-
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 18, 14), armorMaterial)
-    head.position.set(0, 1.82, 0)
-    head.castShadow = true
-    avatar.add(head)
-
-    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.1, 0.2), visorMaterial)
-    visor.position.set(0, 1.82, 0.13)
-    visor.castShadow = true
-    avatar.add(visor)
-
-    for (const side of [-1, 1]) {
-      const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.085, 0.46, 4, 8), suitMaterial)
-      arm.position.set(0.33 * side, 1.22, 0)
-      arm.castShadow = true
-      avatar.add(arm)
-
-      const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.56, 4, 8), suitMaterial)
-      leg.position.set(0.15 * side, 0.58, 0)
-      leg.castShadow = true
-      avatar.add(leg)
-
-      const boot = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.28), armorMaterial)
-      boot.position.set(0.15 * side, 0.2, 0.05)
-      boot.castShadow = true
-      avatar.add(boot)
-    }
-
-    const weapon = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.6), weaponMaterial)
-    weapon.position.set(0.28, 1.08, 0.24)
-    weapon.rotation.x = 0.12
-    weapon.castShadow = true
-    avatar.add(weapon)
-
-    return avatar
+    return createRemotePlayerAvatar()
   }
 
   private disposeObject3D(root: THREE.Object3D) {

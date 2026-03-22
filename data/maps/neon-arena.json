@@ -6,6 +6,7 @@
   "sourceFormat": "brush-map",
   "license": "CC0-1.0",
   "attribution": "Created for VibeQuake",
+  "visualTheme": "neon-tech",
   "bounds": {
     "min": { "x": -20, "y": 0, "z": -20 },
     "max": { "x": 20, "y": 10, "z": 20 }

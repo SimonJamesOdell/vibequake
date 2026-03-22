@@ -7,7 +7,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { WebSocketServer } from 'ws'
 
-import type { ArenaMap, ArenaMapSummary, HighScoreEntry, HighScoreSubmission, MapImportRequest } from '../src/shared/contracts.js'
+import type { ArenaMap, ArenaMapSummary, ArenaVisualTheme, HighScoreEntry, HighScoreSubmission, MapImportRequest } from '../src/shared/contracts.js'
 import { legacyTilesToBrushMap, type LegacyTileMap } from '../src/shared/legacy-map.js'
 import { parseBSP } from './quake-bsp.js'
 import { parseQuakeMapSource } from './quake-map.js'
@@ -58,6 +58,18 @@ const assertApprovedOpenLicense = (value: string) => {
   return normalized
 }
 
+const APPROVED_VISUAL_THEMES = new Set<ArenaVisualTheme>(['neon-tech', 'gothic-dungeon', 'industrial-rust'])
+
+const normalizeVisualTheme = (value: unknown): ArenaVisualTheme | undefined => {
+  if (typeof value !== 'string') {
+    return undefined
+  }
+  if (!APPROVED_VISUAL_THEMES.has(value as ArenaVisualTheme)) {
+    throw new Error(`Map visualTheme must be one of: ${Array.from(APPROVED_VISUAL_THEMES).join(', ')}`)
+  }
+  return value as ArenaVisualTheme
+}
+
 const isVec3 = (value: unknown): value is { x: number; y: number; z: number } =>
   Boolean(value)
   && typeof value === 'object'
@@ -96,6 +108,7 @@ const validateBrushMap = (value: unknown): ArenaMap => {
     license: typeof candidate.license === 'string' ? assertApprovedOpenLicense(candidate.license) : undefined,
     sourceUrl: typeof candidate.sourceUrl === 'string' ? candidate.sourceUrl : undefined,
     attribution: typeof candidate.attribution === 'string' ? candidate.attribution.trim() : undefined,
+    visualTheme: normalizeVisualTheme(candidate.visualTheme),
     bounds: candidate.bounds,
     brushes: candidate.brushes,
     playerSpawn: candidate.playerSpawn,
@@ -398,6 +411,7 @@ const multiplayerManager = new MultiplayerManager({
     return {
       playerSpawn: map.playerSpawn,
       enemySpawns: map.enemySpawns,
+      brushes: map.brushes,
       bounds: map.bounds,
     }
   },

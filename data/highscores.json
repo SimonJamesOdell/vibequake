@@ -1,5 +1,19 @@
 [
   {
+    "id": "3fb6e687-11c4-4ca5-ac17-d70f99c64f00",
+    "name": "Anonymous",
+    "score": 18102,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-09T02:04:46.455Z"
+  },
+  {
+    "id": "749d5266-0e8d-4453-9ca7-c362123d0372",
+    "name": "Anonymous",
+    "score": 18000,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-09T01:58:58.610Z"
+  },
+  {
     "id": "c2659e3a-4e06-4fcd-a930-3ebf9a0130de",
     "name": "Anonymous",
     "score": 17200,
@@ -28,6 +42,20 @@
     "createdAt": "2026-03-09T01:03:12.303Z"
   },
   {
+    "id": "ca80dd62-569c-4cc1-af62-17955ecff32d",
+    "name": "Anonymous",
+    "score": 12100,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:42:09.110Z"
+  },
+  {
+    "id": "91229727-e076-4588-aec6-2e108659e099",
+    "name": "Anonymous",
+    "score": 12099,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:43:43.516Z"
+  },
+  {
     "id": "21e3ec10-2500-403a-812e-6a7c36bc22f3",
     "name": "Anonymous",
     "score": 9100,
@@ -40,6 +68,13 @@
     "score": 9100,
     "mapId": "abyssal-grotto-prime",
     "createdAt": "2026-03-09T00:58:14.467Z"
+  },
+  {
+    "id": "911bd024-0a5e-4219-9f4a-222865761835",
+    "name": "Anonymous",
+    "score": 8900,
+    "mapId": "dark-caverns",
+    "createdAt": "2026-03-10T02:10:15.377Z"
   },
   {
     "id": "3685751e-c522-4aa8-bbe6-11f2ebc48eed",
@@ -182,6 +217,20 @@
     "createdAt": "2026-03-08T21:33:44.084Z"
   },
   {
+    "id": "a428e3c5-3a4d-4cc0-b275-f0610327feab",
+    "name": "Anonymous",
+    "score": 1900,
+    "mapId": "dark-caverns",
+    "createdAt": "2026-03-10T02:05:05.356Z"
+  },
+  {
+    "id": "aa5921ce-3766-4b3f-8e46-5b487ec95e0f",
+    "name": "Anonymous",
+    "score": 1700,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-09T02:51:49.115Z"
+  },
+  {
     "id": "476d1e32-2262-41d2-a635-764741919136",
     "name": "Anonymous",
     "score": 1600,
@@ -231,6 +280,20 @@
     "createdAt": "2026-03-09T01:29:54.254Z"
   },
   {
+    "id": "bd4b2eb4-4074-4493-914f-84205bd396e7",
+    "name": "Anonymous",
+    "score": 1200,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:33:10.623Z"
+  },
+  {
+    "id": "d57a3ad0-9040-4ad7-b4e1-6037e72a8f4e",
+    "name": "Anonymous",
+    "score": 1200,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T21:05:57.564Z"
+  },
+  {
     "id": "011e6118-5ca7-4cfa-b4a2-5a147efb187a",
     "name": "Anonymous",
     "score": 1000,
@@ -259,11 +322,46 @@
     "createdAt": "2026-03-08T21:39:10.891Z"
   },
   {
+    "id": "0e157521-9af2-4e0f-9ca9-4b583ac73972",
+    "name": "Anonymous",
+    "score": 1000,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-21T09:06:06.155Z"
+  },
+  {
+    "id": "19ca5e1e-82ec-4116-9b22-680b4fb980bd",
+    "name": "Anonymous",
+    "score": 1000,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-21T11:00:58.532Z"
+  },
+  {
     "id": "6a322399-3fed-430b-a4ae-03c1ce389377",
     "name": "Anonymous",
     "score": 900,
     "mapId": "neon-arena",
     "createdAt": "2026-03-08T21:24:14.421Z"
+  },
+  {
+    "id": "b4796a4d-63fd-4cdf-9778-1c1e85578789",
+    "name": "Anonymous",
+    "score": 700,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-09T02:45:45.671Z"
+  },
+  {
+    "id": "5e9eed7c-e3bd-41fd-b5d4-2711efb5f496",
+    "name": "Anonymous",
+    "score": 700,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-21T10:29:07.636Z"
+  },
+  {
+    "id": "9ffa254a-087a-4e58-8b90-5f70978b5c97",
+    "name": "Anonymous",
+    "score": 700,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-21T12:08:42.309Z"
   },
   {
     "id": "08d90c02-8716-4c72-9705-2e0c76b4ea73",
@@ -308,11 +406,81 @@
     "createdAt": "2026-03-08T20:49:08.572Z"
   },
   {
+    "id": "a2c313b8-bc05-4e5d-93ea-49cfb3482181",
+    "name": "Anonymous",
+    "score": 600,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:41:47.652Z"
+  },
+  {
+    "id": "c7bdb3cc-f407-498f-9d1c-eaa8ccc350a3",
+    "name": "Anonymous",
+    "score": 600,
+    "mapId": "neon-arena",
+    "createdAt": "2026-03-09T01:42:06.416Z"
+  },
+  {
+    "id": "618fa805-dc10-4cfb-b0bf-7af3d0f89a24",
+    "name": "Anonymous",
+    "score": 500,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-09T02:12:03.430Z"
+  },
+  {
+    "id": "6d193727-5452-4f33-9d91-45f5dd2305a5",
+    "name": "Anonymous",
+    "score": 400,
+    "mapId": "abyssal-grotto",
+    "createdAt": "2026-03-09T02:23:53.003Z"
+  },
+  {
+    "id": "ac553b22-089f-497a-93a5-4ef930fef3d4",
+    "name": "Anonymous",
+    "score": 400,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-21T10:34:48.483Z"
+  },
+  {
+    "id": "f862c2a8-6c80-4454-bf89-ffdf11f6508d",
+    "name": "Anonymous",
+    "score": 400,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-21T10:56:23.395Z"
+  },
+  {
+    "id": "5a68474e-b8b1-4656-b104-5ac6306f7f96",
+    "name": "Anonymous",
+    "score": 400,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-21T11:13:47.422Z"
+  },
+  {
     "id": "41354d17-75aa-4dbe-a1c7-3a9aeaeb25ed",
     "name": "Anonymous",
     "score": 302,
     "mapId": "abyssal-grotto",
     "createdAt": "2026-03-08T20:47:03.543Z"
+  },
+  {
+    "id": "133b622a-1995-43a8-952e-7bd4161dadf8",
+    "name": "Anonymous",
+    "score": 300,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-21T09:11:46.747Z"
+  },
+  {
+    "id": "92f73d04-ded8-4bf9-a3fb-345926d5a2b9",
+    "name": "Anonymous",
+    "score": 300,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-21T10:49:49.458Z"
+  },
+  {
+    "id": "447ab0d2-aad9-4a01-8ca3-e8d8fb54e256",
+    "name": "Anonymous",
+    "score": 300,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-22T21:05:19.294Z"
   },
   {
     "id": "c3ab04d3-d640-4ea6-97ff-3bacb4ae26bc",
@@ -341,6 +509,20 @@
     "score": 200,
     "mapId": "neon-arena",
     "createdAt": "2026-03-08T21:03:45.682Z"
+  },
+  {
+    "id": "e2bd99d2-00db-4346-8a44-d924c785021d",
+    "name": "Anonymous",
+    "score": 200,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-21T09:07:04.493Z"
+  },
+  {
+    "id": "9b43a0c8-7350-4a60-9459-c8dcfaf1073b",
+    "name": "Anonymous",
+    "score": 200,
+    "mapId": "iron-cathedral",
+    "createdAt": "2026-03-21T09:09:03.314Z"
   },
   {
     "id": "febd4c83-b30f-406f-8507-b3c2b8900b20",
@@ -516,187 +698,5 @@
     "score": 193,
     "mapId": "neon-arena",
     "createdAt": "2026-03-07T22:40:52.856Z"
-  },
-  {
-    "id": "1f2495f3-dc04-4413-b0c8-1d68a9726969",
-    "name": "Anonymous",
-    "score": 193,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:40:52.874Z"
-  },
-  {
-    "id": "56c08df5-2af8-4fda-8734-fa424ed0f222",
-    "name": "Anonymous",
-    "score": 193,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:40:53.904Z"
-  },
-  {
-    "id": "c586a77b-fb7a-41b8-bc2f-e9573a5d50f7",
-    "name": "Anonymous",
-    "score": 193,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:40:53.959Z"
-  },
-  {
-    "id": "f027dd66-4607-4681-994b-6a92fd797be9",
-    "name": "Anonymous",
-    "score": 193,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:40:54.257Z"
-  },
-  {
-    "id": "f96e52d8-3aca-44fc-8684-f5736d1b29cb",
-    "name": "Anonymous",
-    "score": 165,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:08:48.829Z"
-  },
-  {
-    "id": "64e9bd7c-910d-4bce-80f2-ef98cfc65973",
-    "name": "Anonymous",
-    "score": 164,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:09:00.250Z"
-  },
-  {
-    "id": "36a1d789-ce1a-4bed-8b6f-a7898695c2a4",
-    "name": "Anonymous",
-    "score": 163,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:09:07.757Z"
-  },
-  {
-    "id": "74f154b5-ef7a-434a-8a71-e3fd8ca02f9e",
-    "name": "Anonymous",
-    "score": 139,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:07:30.541Z"
-  },
-  {
-    "id": "0eea9d91-d429-4590-97b4-fc1c02c5de3e",
-    "name": "Anonymous",
-    "score": 117,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T23:04:55.511Z"
-  },
-  {
-    "id": "bf10311e-d26f-48ce-826a-e8906f458d87",
-    "name": "Anonymous",
-    "score": 100,
-    "mapId": "cathedral-cavern",
-    "createdAt": "2026-03-08T20:54:43.335Z"
-  },
-  {
-    "id": "f9fa6f1d-adfe-4788-8b3c-e61cf3f518ec",
-    "name": "Anonymous",
-    "score": 100,
-    "mapId": "cathedral-cavern",
-    "createdAt": "2026-03-08T20:54:52.008Z"
-  },
-  {
-    "id": "337fd2f7-7dbe-483a-a970-cc630038fcda",
-    "name": "Anonymous",
-    "score": 100,
-    "mapId": "cathedral-cavern",
-    "createdAt": "2026-03-08T20:55:30.873Z"
-  },
-  {
-    "id": "5518b84c-99d8-477e-9f64-de894779444a",
-    "name": "Anonymous",
-    "score": 100,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-08T21:38:41.550Z"
-  },
-  {
-    "id": "e26e87b3-11b4-4a23-94cb-cee4bde65d79",
-    "name": "Anonymous",
-    "score": 100,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-09T01:07:56.693Z"
-  },
-  {
-    "id": "0805412e-2f80-497b-8c13-0109b9c1dd80",
-    "name": "Anonymous",
-    "score": 100,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-09T01:08:02.985Z"
-  },
-  {
-    "id": "842ad45f-1f08-4421-9203-18440490cd87",
-    "name": "Anonymous",
-    "score": 100,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-09T01:14:40.778Z"
-  },
-  {
-    "id": "3fbc3dd2-79f5-40db-b451-0fcb9042985e",
-    "name": "Anonymous",
-    "score": 100,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-09T01:16:16.695Z"
-  },
-  {
-    "id": "e6ac3808-7ddb-40a8-b4c3-71ec97eeca99",
-    "name": "Anonymous",
-    "score": 99,
-    "mapId": "stormkeep",
-    "createdAt": "2026-03-07T06:25:35.467Z"
-  },
-  {
-    "id": "293978b6-3669-40be-922e-3312c5424c8c",
-    "name": "Anonymous",
-    "score": 88,
-    "mapId": "stormkeep",
-    "createdAt": "2026-03-07T05:41:53.438Z"
-  },
-  {
-    "id": "3bb1348a-190a-4741-80ac-931e5a72bf24",
-    "name": "Anonymous",
-    "score": 77,
-    "mapId": "dark-caverns",
-    "createdAt": "2026-03-08T20:14:37.839Z"
-  },
-  {
-    "id": "a106c165-8871-4063-96fe-cceed364cffc",
-    "name": "Anonymous",
-    "score": 76,
-    "mapId": "dark-caverns",
-    "createdAt": "2026-03-08T20:15:14.907Z"
-  },
-  {
-    "id": "700bfce8-871d-421e-bde6-a826ca61cd8a",
-    "name": "Anonymous",
-    "score": 71,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:44:36.557Z"
-  },
-  {
-    "id": "b4201c17-e18e-4a5c-a4a7-02670cf44047",
-    "name": "Anonymous",
-    "score": 70,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:45:05.399Z"
-  },
-  {
-    "id": "acb1d182-a7fe-43e6-ac3f-dd39dbdfe405",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:37.575Z"
-  },
-  {
-    "id": "537af35f-7eff-4999-8650-f04e869aa52e",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:38.171Z"
-  },
-  {
-    "id": "01cdbabc-d300-4952-a110-bd6c1027ccb2",
-    "name": "Anonymous",
-    "score": 65,
-    "mapId": "neon-arena",
-    "createdAt": "2026-03-07T22:20:38.236Z"
   }
 ]

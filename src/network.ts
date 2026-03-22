@@ -5,6 +5,7 @@ import type {
   PlayerState,
   ProjectileState,
   RoomState,
+  StateSyncPayload,
   ServerMessage,
 } from './shared/multiplayer.js'
 import type { Vec3 } from './shared/contracts.js'
@@ -21,7 +22,7 @@ export type NetworkCallbacks = {
   onEnemyDied: (enemyId: string, killerId: string) => void
   onProjectileSpawn: (projectile: ProjectileState) => void
   onPickupCollected: (pickupId: string, playerId: string) => void
-  onStateSync: (room: RoomState) => void
+  onStateSync: (room: RoomState, metadata: Omit<StateSyncPayload, 'room'>) => void
 }
 
 export class NetworkClient {
@@ -36,6 +37,9 @@ export class NetworkClient {
   private shouldReconnect = true
   private serverUrls: string[] = []
   private activeServerUrlIndex = 0
+  private localPlayerId: string | null = null
+  private nextInputSeq = 0
+  private latestAckInputSeq = 0
 
   constructor(callbacks: NetworkCallbacks) {
     this.callbacks = callbacks
@@ -124,6 +128,7 @@ export class NetworkClient {
   private handleServerMessage(message: ServerMessage) {
     switch (message.type) {
       case 'welcome':
+        this.localPlayerId = message.payload.playerId
         this.callbacks.onWelcome(message.payload.playerId, message.payload.room)
         break
       case 'world-directory':
@@ -131,6 +136,15 @@ export class NetworkClient {
         break
       case 'map-preview-state':
         this.callbacks.onMapPreviewState(message.payload.room)
+        break
+      case 'net-ping':
+        this.send({
+          type: 'net-pong',
+          payload: {
+            sentAt: message.payload.sentAt,
+            clientSentAt: Date.now(),
+          },
+        })
         break
       case 'player-joined':
         this.callbacks.onPlayerJoined(message.payload.player)
@@ -157,7 +171,18 @@ export class NetworkClient {
         this.callbacks.onPickupCollected(message.payload.pickupId, message.payload.playerId)
         break
       case 'state-sync':
-        this.callbacks.onStateSync(message.payload.room)
+        if (this.localPlayerId && message.payload.latestInputSeqByPlayer) {
+          const acknowledged = message.payload.latestInputSeqByPlayer[this.localPlayerId]
+          if (typeof acknowledged === 'number' && acknowledged > this.latestAckInputSeq) {
+            this.latestAckInputSeq = acknowledged
+          }
+        }
+        this.callbacks.onStateSync(message.payload.room, {
+          latestInputSeqByPlayer: message.payload.latestInputSeqByPlayer,
+          latencyByPlayer: message.payload.latencyByPlayer,
+          sentAt: message.payload.sentAt,
+          serverTick: message.payload.serverTick,
+        })
         break
     }
   }
@@ -195,10 +220,25 @@ export class NetworkClient {
   }
 
   sendInput(position: Vec3, yaw: number, pitch: number) {
+    this.nextInputSeq += 1
     this.send({
       type: 'input',
-      payload: { position, yaw, pitch },
+      payload: {
+        position,
+        yaw,
+        pitch,
+        inputSeq: this.nextInputSeq,
+        sentAt: Date.now(),
+      },
     })
+  }
+
+  getLatestSentInputSeq() {
+    return this.nextInputSeq
+  }
+
+  getLatestAckInputSeq() {
+    return this.latestAckInputSeq
   }
 
   sendShoot(position: Vec3, direction: Vec3, tier: number) {
@@ -249,6 +289,9 @@ export class NetworkClient {
       this.ws.close()
       this.ws = null
     }
+    this.localPlayerId = null
+    this.nextInputSeq = 0
+    this.latestAckInputSeq = 0
   }
 
   isConnected(): boolean {

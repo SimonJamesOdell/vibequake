@@ -60,13 +60,37 @@ export type GameWorldSummary = {
   startedAt: number
 }
 
+export type ClientInputPayload = {
+  position: Vec3
+  yaw: number
+  pitch: number
+  // Optional Phase 3 metadata for monotonic input ordering.
+  inputSeq?: number
+  sentAt?: number
+}
+
+export type StateSyncPayload = {
+  room: RoomState
+  // Optional Phase 3 metadata for reconciliation scaffolding.
+  serverTick?: number
+  sentAt?: number
+  latestInputSeqByPlayer?: Record<string, number>
+  latencyByPlayer?: Record<string, {
+    rttMs: number
+    jitterMs: number
+    outOfOrderInputs: number
+    droppedInputGaps: number
+  }>
+}
+
 // Client -> Server messages
 export type ClientMessage =
   | { type: 'join'; payload: { name: string; mapId: string } }
   | { type: 'leave-world'; payload: Record<string, never> }
   | { type: 'subscribe-world-directory'; payload: Record<string, never> }
   | { type: 'subscribe-map-preview'; payload: { mapId: string } }
-  | { type: 'input'; payload: { position: Vec3; yaw: number; pitch: number } }
+  | { type: 'net-pong'; payload: { sentAt: number; clientSentAt: number } }
+  | { type: 'input'; payload: ClientInputPayload }
   | { type: 'shoot'; payload: { position: Vec3; direction: Vec3; tier: number } }
   | { type: 'damage-enemy'; payload: { enemyId: string; damage: number } }
   | { type: 'collect-pickup'; payload: { pickupId: string } }
@@ -79,6 +103,7 @@ export type ServerMessage =
   | { type: 'welcome'; payload: { playerId: string; room: RoomState } }
   | { type: 'world-directory'; payload: { worlds: GameWorldSummary[] } }
   | { type: 'map-preview-state'; payload: { room: RoomState | null } }
+  | { type: 'net-ping'; payload: { sentAt: number } }
   | { type: 'player-joined'; payload: { player: PlayerState } }
   | { type: 'player-left'; payload: { playerId: string } }
   | { type: 'player-update'; payload: { playerId: string; state: Partial<PlayerState> } }
@@ -87,4 +112,4 @@ export type ServerMessage =
   | { type: 'enemy-died'; payload: { enemyId: string; killerId: string } }
   | { type: 'projectile-spawn'; payload: { projectile: ProjectileState } }
   | { type: 'pickup-collected'; payload: { pickupId: string; playerId: string } }
-  | { type: 'state-sync'; payload: { room: RoomState } }
+  | { type: 'state-sync'; payload: StateSyncPayload }
