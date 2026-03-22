@@ -6,6 +6,12 @@ The project now includes a small Node/Express backend for persistent high scores
 
 Imported maps are now gated by explicit license metadata. The importer only accepts maps when you provide an approved open license and provenance for the source.
 
+## AI-Generated Content And Warranty Disclaimer
+
+This repository and its contents are 100% AI-generated.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS, CONTRIBUTORS, OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 ## Current Prototype
 
 - Pointer-lock first person controls with mouse look
